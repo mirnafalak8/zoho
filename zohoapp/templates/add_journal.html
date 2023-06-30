@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    /* Custom styles for the form */
+    .custom-form {
+        max-width: 600px;
+        margin: 0 auto;
+    }
+</style>
+<section>
+    <div class="container">
+        <div class="col-md-12">
+            <a class="text-white" style="font-size: 2rem;">New Journal</a>
+        </div><br>
+        <form method="POST" action="{% url 'add_journal' %}" class="custom-form">
+            {% csrf_token %}
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label for="">Date:</label>
+                        <input type="date" name="date" class="form-control" required>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label for="">Journal No:</label>
+                        <input type="text" name="journal_no" class="form-control" required>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label for="">Reference No:</label>
+                        <input type="text" name="reference_no" class="form-control">
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="">Notes:</label>
+                        <textarea name="notes" class="form-control" style="height: 60px;"></textarea>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="">Currency:</label>
+                        <select name="currency" class="form-control">
+                            <option value="INR">INR-Indian Rupee</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <label for="">Journal Type:</label>
+            <div class="form-group form-check">
+                <input type="checkbox" name="cash_journal" class="form-check-input" id="cash_journal">
+                <label class="form-check-label" for="">Cash Based Journal</label>
+            </div>
+            
+            <button type="submit" class="btn btn-primary">Save</button>
+        </form>
+    </div>
+</section>
+{% endblock %}

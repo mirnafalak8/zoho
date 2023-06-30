@@ -2600,3 +2600,21 @@ def edit_sales_order(request,id):
 
     }
     return render(request,'edit_sale_page.html',context)
+
+
+def manual_journal_home(request):
+    return render(request,'manual_journal.html')
+
+def add_journal(request):
+    if request.method == 'POST':
+        date = request.POST.get('date')
+        journal_no = request.POST.get('journal_no')
+        reference_no = request.POST.get('reference_no')
+        notes = request.POST.get('notes')
+        currency = request.POST.get('currency')
+        journal_entry = Journal(date=date, journal_no=journal_no, reference_no=reference_no, notes=notes, currency=currency)
+        journal_entry.save()
+
+        return redirect('manual_journal_home')
+    
+    return render(request, 'add_journal.html')

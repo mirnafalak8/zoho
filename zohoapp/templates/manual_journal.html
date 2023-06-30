@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    .custom-height {
+        height: 40px;
+    }
+</style>
+<section>
+    <div class="row fixed-top" style="top: 7rem; margin-left: 18rem;">
+        <div class="col-md-3">
+            <a class="text-white" style="font-size: 2rem;">Manual Journal</a>
+        </div>
+        <div class="col-md-9 text-right">
+            <div class="row align-items-center">
+                <div class="col-md-5">
+                    <form action="#" method="GET">
+                        <div class="input-group">
+                            <input type="text" name="query" placeholder="Search" class="form-control custom-height">
+                            <div class="input-group-append">
+                                <button type="submit" class="btn btn-outline-secondary custom-height">Search</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="col-md-4">
+                    <div class="dropdown">
+                        <button class="btn btn-secondary dropdown-toggle custom-height" type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            Filter By
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="filterDropdown">
+                            <li><a class="dropdown-item" href="#">Option 1</a></li>
+                            <li><a class="dropdown-item" href="#">Option 2</a></li>
+                            <li><a class="dropdown-item" href="#">Option 3</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <a href="{% url 'add_journal' %}"><button class="btn btn-primary custom-height">+ Add Journal</button></a>
+                </div>
+            </div>
+        </div>
+    </div>
+<br>
+    <div class="container-fluid mt-5">
+        <!-- <h2>Journal Entries</h2> -->
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Journal No</th>
+                    <th>Reference No</th>
+                    <th>Status</th>
+                    <th>Notes</th>
+                    <th>Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+               
+            </tbody>
+        </table>
+    </div>
+</section>
+
+{% endblock %}

@@ -117,6 +117,8 @@ urlpatterns = [
     path('add_customer',views.add_customer,name='add_customer'),
     path('entr_custmr',views.entr_custmr,name='entr_custmr'),
     path('payment_term',views.payment_term,name='payment_term'),
+    path('manual_journal_home/',views.manual_journal_home, name='manual_journal_home'),
+    path('add_journal/',views.add_journal, name='add_journal'),
 
 
 

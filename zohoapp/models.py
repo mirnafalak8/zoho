@@ -405,3 +405,13 @@ class sales_item(models.Model):
     desc=models.TextField(max_length=255,null=True,blank=True)
     rate=models.TextField(max_length=255,null=True,blank=True)
     sale=models.ForeignKey(SalesOrder,on_delete=models.CASCADE,null=True,blank=True)
+
+class Journal(models.Model):
+    date = models.DateField()
+    journal_no = models.CharField(max_length=20)
+    reference_no = models.CharField(max_length=20)
+    notes = models.TextField(max_length=255,null=True,blank=True)
+    currency = models.CharField(max_length=10, default='INR')
+
+    def __str__(self):
+        return self.journal_no
