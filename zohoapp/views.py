@@ -2612,7 +2612,15 @@ def add_journal(request):
         reference_no = request.POST.get('reference_no')
         notes = request.POST.get('notes')
         currency = request.POST.get('currency')
-        journal_entry = Journal(date=date, journal_no=journal_no, reference_no=reference_no, notes=notes, currency=currency)
+        attachment = request.FILES.get('attachment')
+        journal_entry = Journal(
+            date=date,
+            journal_no=journal_no,
+            reference_no=reference_no,
+            notes=notes,
+            currency=currency,
+            attachment=attachment 
+        )
         journal_entry.save()
 
         return redirect('manual_journal_home')

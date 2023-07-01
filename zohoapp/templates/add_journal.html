@@ -2,64 +2,157 @@
 {% load static %}
 
 {% block content %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 <style>
-    /* Custom styles for the form */
     .custom-form {
-        max-width: 600px;
+        max-width: 900px;
         margin: 0 auto;
+        margin-top: 5rem; 
     }
 </style>
-<section>
+<section  style="height: 100vh; overflow: auto;">
     <div class="container">
-        <div class="col-md-12">
-            <a class="text-white" style="font-size: 2rem;">New Journal</a>
-        </div><br>
-        <form method="POST" action="{% url 'add_journal' %}" class="custom-form">
-            {% csrf_token %}
-            <div class="row">
-                <div class="col-md-4">
-                    <div class="form-group">
-                        <label for="">Date:</label>
-                        <input type="date" name="date" class="form-control" required>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="form-group">
-                        <label for="">Journal No:</label>
-                        <input type="text" name="journal_no" class="form-control" required>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="form-group">
-                        <label for="">Reference No:</label>
-                        <input type="text" name="reference_no" class="form-control">
-                    </div>
-                </div>
+        <div class="row justify-content-center">
+            <div class="col-md-12">
+                <h2 class="text-white">New Journal</h2>
             </div>
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label for="">Notes:</label>
-                        <textarea name="notes" class="form-control" style="height: 60px;"></textarea>
+            <div class="col-md-12">
+                <form method="POST" action="{% url 'add_journal' %}" class="custom-form" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="date">Date:</label>
+                                <input type="date" name="date" class="form-control" required>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="journal_no">Journal No:</label>
+                                <input type="text" name="journal_no" class="form-control" required>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="reference_no">Reference No:</label>
+                                <input type="text" name="reference_no" class="form-control">
+                            </div>
+                        </div>
                     </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label for="">Currency:</label>
-                        <select name="currency" class="form-control">
-                            <option value="INR">INR-Indian Rupee</option>
-                        </select>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="notes">Notes:</label>
+                                <textarea name="notes" class="form-control" style="height: 60px;"></textarea>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="currency">Currency:</label>
+                                <select name="currency" class="form-control">
+                                    <option value="INR">INR-Indian Rupee</option>
+                                </select>
+                            </div>
+                        </div>
                     </div>
-                </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label for="" class="form-check-label">Journal Type:</label>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-check">
+                                <input type="checkbox" name="cash_journal" class="form-check-input" id="cash_journal">
+                                <label class="form-check-label" for="">Cash Based Journal</label>
+                            </div>
+                        </div>
+                    </div>
+                    <table id="journal_table" class="table table-responsive-lg">
+                        <thead>
+                            <tr>
+                                <th>Number</th>
+                                <th>Select Account</th>
+                                <th>Description</th>
+                                <th>Contact (INR)</th>
+                                <th>Debits</th>
+                                <th>Credits</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1</td>
+                                <td>
+                                <select name="account" class="form-control">
+                                    <option value="">Select Account</option>
+                                    <option value="account1">Account 1</option>
+                                </select>
+                                </td>
+                                <td><input type="text" name="description" class="form-control"></td>
+                                <td>
+                                <select name="contact" class="form-control">
+                                    <option value="">Select Contact (INR)</option>
+                                    <option value="contact1">Contact 1</option>
+                                </select>
+                                </td>
+                                <td><input type="number" name="debits" class="form-control"></td>
+                                <td><input type="number" name="credits" class="form-control"></td>
+                                <td><button type="button" class="btn btn-danger" onclick="deleteRow(this)"><i class="fa fa-times"></i></button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <button type="button" class="btn btn-primary" onclick="addRow()">+</button>  
+                    <br><br>                  
+                    <div class="row">
+                        <div class="col-md-12">
+                            <label for="">Attach File(s):</label>
+                            <div class="form-group">
+                                <input type="file" name="attachment" class="form-control-file">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row justify-content-center mt-4">
+                        <div class="col-md-4">
+                            <button type="button" class="btn btn-outline-secondary" onClick="javascript:history.go(-1);">Back</button>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <button type="submit" class="btn btn-secondary w-50">Save</button>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <button type="button" class="btn btn-outline-secondary">Clear</button>
+                        </div>
+                    </div>
+                </form>
             </div>
-            <label for="">Journal Type:</label>
-            <div class="form-group form-check">
-                <input type="checkbox" name="cash_journal" class="form-check-input" id="cash_journal">
-                <label class="form-check-label" for="">Cash Based Journal</label>
-            </div>
-            
-            <button type="submit" class="btn btn-primary">Save</button>
-        </form>
+        </div>
     </div>
 </section>
+<script>
+    function addRow() {
+        var table = document.getElementById("journal_table");
+        var rowCount = table.rows.length;
+        var row = table.insertRow(rowCount);
+
+        var numberCell = row.insertCell(0);
+        var accountCell = row.insertCell(1);
+        var descriptionCell = row.insertCell(2);
+        var contactCell = row.insertCell(3);
+        var debitsCell = row.insertCell(4);
+        var creditsCell = row.insertCell(5);
+        var actionCell = row.insertCell(6);
+
+        numberCell.innerHTML = rowCount;
+        accountCell.innerHTML = '<input type="text" name="account" class="form-control">';
+        descriptionCell.innerHTML = '<input type="text" name="description" class="form-control">';
+        contactCell.innerHTML = '<input type="text" name="contact" class="form-control">';
+        debitsCell.innerHTML = '<input type="number" name="debits" class="form-control">';
+        creditsCell.innerHTML = '<input type="number" name="credits" class="form-control">';
+        actionCell.innerHTML = '<button type="button" class="btn btn-danger" onclick="deleteRow(this)"><i class="fa fa-times"></i></button>';
+    }
+
+    function deleteRow(button) {
+        var row = button.parentNode.parentNode;
+        row.parentNode.removeChild(row);
+    }
+</script>
+
 {% endblock %}
