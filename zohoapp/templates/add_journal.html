@@ -10,7 +10,7 @@
         margin-top: 5rem; 
     }
 </style>
-<section  style="height: 100vh; overflow: auto;">
+<section style="height: 150vh; overflow: auto;">
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-md-12">
@@ -22,19 +22,19 @@
                     <div class="row">
                         <div class="col-md-4">
                             <div class="form-group">
-                                <label for="date">Date:</label>
+                                <label for="">Date:</label>
                                 <input type="date" name="date" class="form-control" required>
                             </div>
                         </div>
                         <div class="col-md-4">
                             <div class="form-group">
-                                <label for="journal_no">Journal No:</label>
+                                <label for="">Journal No:</label>
                                 <input type="text" name="journal_no" class="form-control" required>
                             </div>
                         </div>
                         <div class="col-md-4">
                             <div class="form-group">
-                                <label for="reference_no">Reference No:</label>
+                                <label for="">Reference No:</label>
                                 <input type="text" name="reference_no" class="form-control">
                             </div>
                         </div>
@@ -42,13 +42,13 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label for="notes">Notes:</label>
+                                <label for="">Notes:</label>
                                 <textarea name="notes" class="form-control" style="height: 60px;"></textarea>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label for="currency">Currency:</label>
+                                <label for="">Currency:</label>
                                 <select name="currency" class="form-control">
                                     <option value="INR">INR-Indian Rupee</option>
                                 </select>
@@ -82,32 +82,58 @@
                             <tr>
                                 <td>1</td>
                                 <td>
-                                <select name="account" class="form-control">
-                                    <option value="">Select Account</option>
-                                    <option value="account1">Account 1</option>
-                                </select>
+                                    <select name="account" class="form-control">
+                                        <option value="">Select Account</option>
+                                        {% for account in accounts %}
+                                        <option value="{{ account.accountName }}">{{ account.accountName }}</option>
+                                        {% endfor %}
+                                    </select>
                                 </td>
                                 <td><input type="text" name="description" class="form-control"></td>
                                 <td>
-                                <select name="contact" class="form-control">
-                                    <option value="">Select Contact (INR)</option>
-                                    <option value="contact1">Contact 1</option>
-                                </select>
+                                    <select name="contact" class="form-control">
+                                        <option value="">Select Contact (INR)</option>
+                                        <option value="contact1">Contact 1</option>
+                                    </select>
                                 </td>
-                                <td><input type="number" name="debits" class="form-control"></td>
-                                <td><input type="number" name="credits" class="form-control"></td>
+                                <td><input type="number" name="debits" class="form-control" onchange="calculateTotals()"></td>
+                                <td><input type="number" name="credits" class="form-control" onchange="calculateTotals()"></td>
                                 <td><button type="button" class="btn btn-danger" onclick="deleteRow(this)"><i class="fa fa-times"></i></button></td>
                             </tr>
                         </tbody>
                     </table>
                     <button type="button" class="btn btn-primary" onclick="addRow()">+</button>  
                     <br><br>                  
-                    <div class="row">
-                        <div class="col-md-12">
+                    <div class="row mt-4">
+                        <div class="col-md-6">
                             <label for="">Attach File(s):</label>
                             <div class="form-group">
                                 <input type="file" name="attachment" class="form-control-file">
                             </div>
+                        </div>
+                    
+                        <div class="col-md-6">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Subtotal</th>
+                                        <th>Debit</th>
+                                        <th>Credit</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Total Amount</td>
+                                        <td><input type="number" class="form-control" id="totalDebit" placeholder="0" ></td>
+                                        <td><input type="number" class="form-control" id="totalCredit" placeholder="0" ></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Difference</td>
+                                        <td><input type="number" class="form-control" id="debitDifference" placeholder="0" ></td>
+                                        <td><input type="number" class="form-control" id="creditDifference" placeholder="0"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                     <div class="row justify-content-center mt-4">
@@ -118,7 +144,7 @@
                             <button type="submit" class="btn btn-secondary w-50">Save</button>
                         </div>
                         <div class="col-md-4 text-end">
-                            <button type="button" class="btn btn-outline-secondary">Clear</button>
+                            <button type="button" class="btn btn-outline-secondary" onclick="clearForm()">Clear</button>
                         </div>
                     </div>
                 </form>
@@ -141,17 +167,58 @@
         var actionCell = row.insertCell(6);
 
         numberCell.innerHTML = rowCount;
-        accountCell.innerHTML = '<input type="text" name="account" class="form-control">';
+        accountCell.innerHTML = '<select name="account" class="form-control"><option value="">Select Account</option>{% for account in accounts %}<option value="{{ account.accountName }}">{{ account.accountName }}</option>{% endfor %}</select>';
+
         descriptionCell.innerHTML = '<input type="text" name="description" class="form-control">';
-        contactCell.innerHTML = '<input type="text" name="contact" class="form-control">';
-        debitsCell.innerHTML = '<input type="number" name="debits" class="form-control">';
-        creditsCell.innerHTML = '<input type="number" name="credits" class="form-control">';
+        var contactSelect = document.createElement('select');
+        contactSelect.name = "contact";
+        contactSelect.className = "form-control";
+        var contactOption = document.createElement('option');
+        contactOption.value = "";
+        contactOption.text = "Select Contact (INR)";
+        contactSelect.appendChild(contactOption);
+        contactCell.appendChild(contactSelect);
+        debitsCell.innerHTML = '<input type="number" name="debits" class="form-control" onchange="calculateTotals()">';
+        creditsCell.innerHTML = '<input type="number" name="credits" class="form-control"onchange="calculateTotals()">';
         actionCell.innerHTML = '<button type="button" class="btn btn-danger" onclick="deleteRow(this)"><i class="fa fa-times"></i></button>';
     }
 
     function deleteRow(button) {
         var row = button.parentNode.parentNode;
         row.parentNode.removeChild(row);
+    }
+
+    function clearForm() {
+        var form = document.querySelector('form');
+        form.reset();
+    }
+
+    function calculateTotals() {
+        var debitInputs = document.querySelectorAll('input[name="debits"]');
+        var creditInputs = document.querySelectorAll('input[name="credits"]');
+        var totalDebit = 0;
+        var totalCredit = 0;
+
+        debitInputs.forEach(function (input) {
+            totalDebit += parseFloat(input.value) || 0;
+        });
+
+        creditInputs.forEach(function (input) {
+            totalCredit += parseFloat(input.value) || 0;
+        });
+
+        document.getElementById('totalDebit').value = totalDebit.toFixed(2);
+        document.getElementById('totalCredit').value = totalCredit.toFixed(2);
+
+        var difference = totalDebit - totalCredit;
+
+        if (difference < 0) {
+            document.getElementById('debitDifference').value = Math.abs(difference).toFixed(2);
+            document.getElementById('creditDifference').value = "0.00";
+        } else {
+            document.getElementById('debitDifference').value = "0.00";
+            document.getElementById('creditDifference').value = difference.toFixed(2);
+        }
     }
 </script>
 

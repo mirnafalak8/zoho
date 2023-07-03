@@ -408,11 +408,12 @@ class sales_item(models.Model):
 
 class Journal(models.Model):
     date = models.DateField()
-    journal_no = models.CharField(max_length=20)
-    reference_no = models.CharField(max_length=20)
-    notes = models.TextField(max_length=255, null=True, blank=True)
-    currency = models.CharField(max_length=10, default='INR')
-    attachment = models.FileField(upload_to='attachments/', null=True, blank=True)
+    journal_no = models.CharField(max_length=255)
+    reference_no = models.CharField(max_length=255, blank=True)
+    notes = models.TextField(blank=True)
+    currency = models.CharField(max_length=255)
+    cash_journal = models.BooleanField(default=False)
+    attachment = models.FileField(upload_to='attachments/', blank=True)
 
     def __str__(self):
         return self.journal_no

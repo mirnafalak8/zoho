@@ -2603,26 +2603,27 @@ def edit_sales_order(request,id):
 
 
 def manual_journal_home(request):
-    return render(request,'manual_journal.html')
+    journal = Journal.objects.all()
+    context = {'journal': journal}
+    return render(request, 'manual_journal_home.html', context)
 
 def add_journal(request):
+    accounts = Account.objects.all()
     if request.method == 'POST':
         date = request.POST.get('date')
         journal_no = request.POST.get('journal_no')
         reference_no = request.POST.get('reference_no')
         notes = request.POST.get('notes')
         currency = request.POST.get('currency')
-        attachment = request.FILES.get('attachment')
-        journal_entry = Journal(
+        cash_journal = request.POST.get('cash_journal')
+        journal = Journal(
             date=date,
             journal_no=journal_no,
             reference_no=reference_no,
             notes=notes,
             currency=currency,
-            attachment=attachment 
+            cash_journal=cash_journal
         )
-        journal_entry.save()
-
+        journal.save()
         return redirect('manual_journal_home')
-    
-    return render(request, 'add_journal.html')
+    return render(request, 'add_journal.html',{'accounts': accounts})
