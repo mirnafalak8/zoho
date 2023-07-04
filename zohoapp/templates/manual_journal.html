@@ -2,6 +2,9 @@
 {% load static %}
 
 {% block content %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
 <style>
     .custom-height {
         height: 40px;
@@ -17,9 +20,9 @@
                 <div class="col-md-5">
                     <form action="#" method="GET">
                         <div class="input-group">
-                            <input type="text" name="query" placeholder="Search" class="form-control custom-height">
+                            <input type="text" name="query" placeholder="Search" class="form-control  custom-height">
                             <div class="input-group-append">
-                                <button type="submit" class="btn btn-outline-secondary custom-height">Search</button>
+                                <button type="submit" class="btn btn-outline-secondary  custom-height">Search</button>
                             </div>
                         </div>
                     </form>
@@ -37,14 +40,13 @@
                     </div>
                 </div>
                 <div class="col-md-3">
-                    <a href="{% url 'add_journal' %}"><button class="btn btn-primary custom-height">+ Add Journal</button></a>
+                    <a href="{% url 'add_journal' %}"><button class="btn btn-primary  custom-height">+ Add Journal</button></a>
                 </div>
             </div>
         </div>
     </div>
-<br>
+    <br>
     <div class="container-fluid mt-5">
-        <!-- <h2>Journal Entries</h2> -->
         <table class="table">
             <thead>
                 <tr>
@@ -57,18 +59,29 @@
                 </tr>
             </thead>
             <tbody>
+                {% for entry in journal %}
                 <tr>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
+                    <td>{{ entry.date }}</td>
+                    <td>{{ entry.journal_no }}</td>
+                    <td>{{ entry.reference_no }}</td>
+                    <td>{{ entry.status }}</td>
+                    <td>
+                        <div class="note-icon" data-toggle="tooltip" data-placement="top" title="{{ entry.notes }}"><i class="fas fa-sticky-note"></i></div>
+                    </td>
+                    <td><i class="fa fa-inr"></i>{{ entry.total_debit }}</td>
                 </tr>
-               
+                {% endfor %}
             </tbody>
         </table>
     </div>
 </section>
 
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $(document).ready(function() {
+        $('[data-toggle="tooltip"]').tooltip();
+    });
+</script>
 {% endblock %}

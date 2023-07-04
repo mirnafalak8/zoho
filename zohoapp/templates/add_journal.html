@@ -90,10 +90,15 @@
                                     </select>
                                 </td>
                                 <td><input type="text" name="description" class="form-control"></td>
-                                <td>
+                                 <td>
                                     <select name="contact" class="form-control">
                                         <option value="">Select Contact (INR)</option>
-                                        <option value="contact1">Contact 1</option>
+                                        {% for customer in customers %}
+                                        <option value="{{ customer.customerName }}">{{ customer.customerName }}</option>
+                                        {% endfor %}
+                                        {% for vendor in vendors %}
+                                        <option value="{{ vendor.vendor_display_name }}">{{ vendor.vendor_display_name }}</option>
+                                        {% endfor %}
                                     </select>
                                 </td>
                                 <td><input type="number" name="debits" class="form-control" onchange="calculateTotals()"></td>
@@ -168,16 +173,20 @@
 
         numberCell.innerHTML = rowCount;
         accountCell.innerHTML = '<select name="account" class="form-control"><option value="">Select Account</option>{% for account in accounts %}<option value="{{ account.accountName }}">{{ account.accountName }}</option>{% endfor %}</select>';
-
         descriptionCell.innerHTML = '<input type="text" name="description" class="form-control">';
-        var contactSelect = document.createElement('select');
-        contactSelect.name = "contact";
-        contactSelect.className = "form-control";
-        var contactOption = document.createElement('option');
-        contactOption.value = "";
-        contactOption.text = "Select Contact (INR)";
-        contactSelect.appendChild(contactOption);
-        contactCell.appendChild(contactSelect);
+        var options = '';
+        options += '<option value="">Select Contact</option>';
+
+        '{% for vendor in vendors %}'
+            options += '<option value="{{ vendor.vendor_display_name }}">{{ vendor.vendor_display_name }}</option>';
+        '{% endfor %}'
+
+        '{% for customer in customers %}'
+            options += '<option value="{{ customer.customerName }}">{{ customer.customerName }}</option>';
+        '{% endfor %}'
+
+        contactCell.innerHTML = '<select name="contact" class="form-control">' + options + '</select>';
+
         debitsCell.innerHTML = '<input type="number" name="debits" class="form-control" onchange="calculateTotals()">';
         creditsCell.innerHTML = '<input type="number" name="credits" class="form-control"onchange="calculateTotals()">';
         actionCell.innerHTML = '<button type="button" class="btn btn-danger" onclick="deleteRow(this)"><i class="fa fa-times"></i></button>';

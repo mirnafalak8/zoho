@@ -407,6 +407,10 @@ class sales_item(models.Model):
     sale=models.ForeignKey(SalesOrder,on_delete=models.CASCADE,null=True,blank=True)
 
 class Journal(models.Model):
+    STATUS_CHOICES = (
+        ('draft', 'Draft'),
+        ('published', 'Published'),
+    )
     date = models.DateField()
     journal_no = models.CharField(max_length=255)
     reference_no = models.CharField(max_length=255, blank=True)
@@ -414,6 +418,19 @@ class Journal(models.Model):
     currency = models.CharField(max_length=255)
     cash_journal = models.BooleanField(default=False)
     attachment = models.FileField(upload_to='attachments/', blank=True)
+    total_debit = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    total_credit = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    difference = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='draft')
+
 
     def __str__(self):
         return self.journal_no
+
+class JournalEntry(models.Model):
+    journal = models.ForeignKey(Journal, on_delete=models.CASCADE)
+    account = models.CharField(max_length=200)
+    description = models.TextField()
+    contact = models.CharField(max_length=200)
+    debits = models.DecimalField(max_digits=10, decimal_places=2)
+    credits = models.DecimalField(max_digits=10, decimal_places=2)

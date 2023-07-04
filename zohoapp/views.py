@@ -2605,17 +2605,19 @@ def edit_sales_order(request,id):
 def manual_journal_home(request):
     journal = Journal.objects.all()
     context = {'journal': journal}
-    return render(request, 'manual_journal_home.html', context)
+    return render(request, 'manual_journal.html', context)
 
 def add_journal(request):
     accounts = Account.objects.all()
+    vendors = vendor_table.objects.all()
+    customers = customer.objects.all()
     if request.method == 'POST':
         date = request.POST.get('date')
         journal_no = request.POST.get('journal_no')
         reference_no = request.POST.get('reference_no')
         notes = request.POST.get('notes')
         currency = request.POST.get('currency')
-        cash_journal = request.POST.get('cash_journal')
+        cash_journal = request.POST.get('cash_journal') == 'True'
         journal = Journal(
             date=date,
             journal_no=journal_no,
@@ -2625,5 +2627,42 @@ def add_journal(request):
             cash_journal=cash_journal
         )
         journal.save()
+        account_list = request.POST.getlist('account')
+        description_list = request.POST.getlist('description')
+        contact_list = request.POST.getlist('contact')
+        debits_list = request.POST.getlist('debits')
+        credits_list = request.POST.getlist('credits')
+
+        total_debit = 0
+        total_credit = 0
+
+        for i in range(len(account_list)):
+            account = account_list[i]
+            description = description_list[i]
+            contact = contact_list[i]
+            debits = debits_list[i]
+            credits = credits_list[i]
+
+            journal_entry = JournalEntry(
+                journal=journal,
+                account=account,
+                description=description,
+                contact=contact,
+                debits=debits,
+                credits=credits
+            )
+            journal_entry.save()
+
+            total_debit += float(debits) if debits else 0
+            total_credit += float(credits) if credits else 0
+
+        difference = total_debit - total_credit
+
+        journal.total_debit = total_debit
+        journal.total_credit = total_credit
+        journal.difference = difference
+        journal.save()
+
         return redirect('manual_journal_home')
-    return render(request, 'add_journal.html',{'accounts': accounts})
+
+    return render(request, 'add_journal.html', {'accounts': accounts, 'vendors': vendors, 'customers': customers})
