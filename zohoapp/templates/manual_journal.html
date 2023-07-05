@@ -9,6 +9,10 @@
     .custom-height {
         height: 40px;
     }
+    a{
+        text-decoration: none;
+        color: white;
+    }
 </style>
 <section>
     <div class="row fixed-top" style="top: 7rem; margin-left: 18rem;">
@@ -33,7 +37,7 @@
                             Filter By
                         </button>
                         <ul class="dropdown-menu" aria-labelledby="filterDropdown">
-                            <li><a class="dropdown-item" href="#">Option 1</a></li>
+                            <li><a class="dropdown-item" href="{% url 'journal_list' %}">Option 1</a></li>
                             <li><a class="dropdown-item" href="#">Option 2</a></li>
                             <li><a class="dropdown-item" href="#">Option 3</a></li>
                         </ul>
@@ -61,14 +65,18 @@
             <tbody>
                 {% for entry in journal %}
                 <tr>
-                    <td>{{ entry.date }}</td>
-                    <td>{{ entry.journal_no }}</td>
-                    <td>{{ entry.reference_no }}</td>
-                    <td>{{ entry.status }}</td>
+                    <a href="{% url 'journal_list' %}">
+                    <td> <a href="{% url 'journal_list' %}"> {{ entry.date }}</a></td>
+                    <td> <a href="{% url 'journal_list' %}"> {{ entry.journal_no }}</a></td>
+                    <td> <a href="{% url 'journal_list' %}"> {{ entry.reference_no }}</a></td>
+                    <td> <a href="{% url 'journal_list' %}"> {{ entry.status }}</a></td>
                     <td>
+                        <a href="{% url 'journal_list' %}">
                         <div class="note-icon" data-toggle="tooltip" data-placement="top" title="{{ entry.notes }}"><i class="fas fa-sticky-note"></i></div>
+                        </a>
                     </td>
-                    <td><i class="fa fa-inr"></i>{{ entry.total_debit }}</td>
+                    <td><a href="{% url 'journal_list' %}"><i class="fa fa-inr"></i>{{ entry.total_debit }}</a></td>
+                </a>
                 </tr>
                 {% endfor %}
             </tbody>

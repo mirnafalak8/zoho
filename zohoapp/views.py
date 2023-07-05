@@ -2666,3 +2666,7 @@ def add_journal(request):
         return redirect('manual_journal_home')
 
     return render(request, 'add_journal.html', {'accounts': accounts, 'vendors': vendors, 'customers': customers})
+
+def journal_list(request):
+    journals = Journal.objects.all()
+    return render(request, 'journal_list.html', {'journal': journals})
