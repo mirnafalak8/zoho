@@ -120,6 +120,18 @@ urlpatterns = [
     path('manual_journal_home/',views.manual_journal_home, name='manual_journal_home'),
     path('add_journal/',views.add_journal, name='add_journal'),
     path('journal_list/',views.journal_list, name='journal_list'),
+    path('get_journal_details/', views.get_journal_details, name='get_journal_details'),
+    path('publish_journal/', views.publish_journal, name='publish_journal'),
+    path('draft_journal_list/', views.draft_journal_list, name='draft_journal_list'),
+    path('published_journal_list/', views.published_journal_list, name='published_journal_list'),
+    path('draft_journal/', views.draft_journal, name='draft_journal'),
+    path('published_journal/', views.published_journal, name='published_journal'),
+    path('journal/edit/<int:journal_id>/', views.edit_journal, name='edit_journal'),
+
+
+
+
+
 
 
 

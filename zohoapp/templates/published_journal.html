@@ -64,9 +64,9 @@
                         Filter
                         </button>
                         <ul class="dropdown-menu" aria-labelledby="filterDropdown">
-                            <li><a class="dropdown-item custom-item" href="#">All</a></li>
+                            <li><a class="dropdown-item custom-item" href="{% url 'journal_list' %}">All</a></li>
                             <li><a class="dropdown-item custom-item" href="{% url 'draft_journal' %}">Draft</a></li>
-                            <li><a class="dropdown-item custom-item" href="{% url 'published_journal' %}">Published</a></li>
+                            <li><a class="dropdown-item custom-item" href="#">Published</a></li>
                         </ul>
                     </div>
                 </div>
@@ -90,13 +90,19 @@
                             {% endif %}
                         </div>
                     </a>
+                    <!-- {% if journal.status == 'draft' %}
+                            <span class="status draft">{{ journal.status }}</span>
+                        {% elif journal.status == 'published' %}
+                            <span class="status published">{{ journal.status }}</span>
+                        {% else %}
+                            <span class="status">{{ journal.status }}</span>
+                        {% endif %} -->
                     {% endfor%}
                 </div>
             </div>
             <div class="col-md-7">
                 <div class="d-flex justify-content-between align-items-center">
                     <button class="btn btn-success btn-publish">Publish</button>
-                    <button class="btn btn-outline-danger">Template</button>
                     <div class="">
                         <a href="#" class="text-white" style="margin-right: 10px;"><i class="fa fa-edit"></i></a>
                         <a href="#" class="text-white" style="margin-right: 10px;"><i class="fa fa-file-pdf"></i></a>
@@ -150,10 +156,10 @@
             journal_id: journalId,
           },
           success: function(response) {
-            // Update the status in the details section
+        
             $('.details-section .status').text('Published');
     
-            // Update the status in the list item
+        
             $('.list-item.active .status').text('Published');
           },
           error: function() {

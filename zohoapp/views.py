@@ -2669,4 +2669,36 @@ def add_journal(request):
 
 def journal_list(request):
     journals = Journal.objects.all()
-    return render(request, 'journal_list.html', {'journal': journals})
+    return render(request, 'journal_list.html', {'journals': journals})
+
+def get_journal_details(request):
+    journal_id = request.GET.get('journal_id')
+    journal = get_object_or_404(Journal, id=journal_id)
+    journal_entries = JournalEntry.objects.filter(journal=journal)
+    return render(request, 'journal_details.html', {'journal': journal, 'journal_entries': journal_entries})
+
+def publish_journal(request):
+    if request.method == 'POST':
+        journal_id = request.POST.get('journal_id')
+        journal = get_object_or_404(Journal, id=journal_id)
+        journal.status = 'published'
+        journal.save()
+        return JsonResponse({'status': 'success'})
+    else:
+        return JsonResponse({'status': 'error'})
+    
+def draft_journal_list(request):
+    journals = Journal.objects.filter(status='draft')
+    return render(request, 'draft_journal_list.html', {'journals': journals})
+
+def published_journal_list(request):
+    journals = Journal.objects.filter(status='published')
+    return render(request, 'published_journal_list.html', {'journals': journals})
+
+def draft_journal(request):
+    journals = Journal.objects.filter(status='draft')
+    return render(request, 'draft_journal.html', {'journals': journals})
+
+def published_journal(request):
+    journals = Journal.objects.filter(status='published')
+    return render(request, 'published_journal.html', {'journals': journals})

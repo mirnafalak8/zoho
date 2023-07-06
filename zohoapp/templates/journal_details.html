@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <h4>Journal Details:</h4>
+<p>Date: {{ journal.date }}</p>
+<p>Journal No: {{ journal.journal_no }}</p>
+<p>Reference No: {{ journal.reference_no }}</p>
+<p>Notes: {{ journal.notes }}</p>
+<p>Currency: {{ journal.currency }}</p>
+<ul>
+  {% for entry in journal_entries %}
+  <li>Account name:{{ entry.account }} - Description: {{entry.description}} Contact: {{ entry.contact }}, Debits: {{ entry.debits }}, Credits: {{ entry.credits }}</li>
+  {% endfor %}
+</ul>
+<p>Total Debit: {{ journal.total_debit }}</p>
+<p>Total Credit: {{ journal.total_credit }}</p>
+<p>Difference: {{ journal.difference }}</p>
+<p>Status: <span id="status">{{ journal.status }}</span></p>
+
+</body>
+</html>

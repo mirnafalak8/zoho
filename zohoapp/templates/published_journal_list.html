@@ -20,7 +20,7 @@
 <section>
     <div class="row fixed-top" style="top: 7rem; margin-left: 18rem;">
         <div class="col-md-3">
-            <a class="text-white" style="font-size: 2rem;">Manual Journal</a>
+            <a class="text-white" style="font-size: 2rem;">Published Journals</a>
         </div>
         <div class="col-md-9 text-right">
             <div class="row align-items-center">
@@ -40,9 +40,9 @@
                             Filter By
                         </button>
                         <ul class="dropdown-menu" aria-labelledby="filterDropdown">
-                            <li><a class="dropdown-item custom-item" href="#">All</a></li>
+                            <li><a class="dropdown-item custom-item" href="{% url 'manual_journal_home' %}">All</a></li>
                             <li><a class="dropdown-item custom-item" href="{% url 'draft_journal_list' %}">Draft</a></li>
-                            <li><a class="dropdown-item custom-item" href="{% url 'published_journal_list' %}">Published</a></li>
+                            <li><a class="dropdown-item custom-item" href="#">Published</a></li>
                         </ul>
                     </div>
                 </div>
@@ -66,12 +66,11 @@
                 </tr>
             </thead>
             <tbody>
-                {% for entry in journal %}
+                {% for entry in journals %}
                 <tr>
-                    <a href="{% url 'journal_list' %}">
-                    <td> <a href="{% url 'journal_list' %}"> {{ entry.date }}</a></td>
-                    <td> <a href="{% url 'journal_list' %}"> {{ entry.journal_no }}</a></td>
-                    <td> <a href="{% url 'journal_list' %}"> {{ entry.reference_no }}</a></td>
+                    <td><a href="{% url 'journal_list' %}">{{ entry.date }}</a></td>
+                    <td><a href="{% url 'journal_list' %}">{{ entry.journal_no }}</a></td>
+                    <td><a href="{% url 'journal_list' %}">{{ entry.reference_no }}</a></td>
                     <td>
                         <a href="{% url 'journal_list' %}">
                         {% if entry.status == 'published' %}
@@ -79,15 +78,18 @@
                         {% else %}
                             <span class="status" style="color: orangered;">{{ entry.status }}</span>
                         {% endif %}
-                        </a>
-                    </td> 
+                    </a>
+                    </td>
                     <td>
                         <a href="{% url 'journal_list' %}">
                         <div class="note-icon" data-toggle="tooltip" data-placement="top" title="{{ entry.notes }}"><i class="fas fa-sticky-note"></i></div>
                         </a>
                     </td>
-                    <td><a href="{% url 'journal_list' %}"><i class="fa fa-inr"></i>{{ entry.total_debit }}</a></td>
-                </a>
+                    <td>
+                        <a href="{% url 'journal_list' %}">
+                        <i class="fa fa-inr"></i>{{ entry.total_debit }}
+                    </a>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -95,12 +97,4 @@
     </div>
 </section>
 
-{% endblock %}
-
-{% block scripts %}
-<script>
-    $(document).ready(function() {
-        $('[data-toggle="tooltip"]').tooltip();
-    });
-</script>
 {% endblock %}
