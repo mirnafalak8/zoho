@@ -126,7 +126,7 @@ urlpatterns = [
     path('published_journal_list/', views.published_journal_list, name='published_journal_list'),
     path('draft_journal/', views.draft_journal, name='draft_journal'),
     path('published_journal/', views.published_journal, name='published_journal'),
-    path('journal/edit/<int:journal_id>/', views.edit_journal, name='edit_journal'),
+    path('edit_journal/<int:journal_id>/', views.edit_journal, name='edit_journal'),
 
 
 

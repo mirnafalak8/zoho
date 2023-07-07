@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import AddItem, Journal,Purchase,Sales,Unit
+from .models import AddItem, Journal, JournalEntry,Purchase,Sales,Unit
 
 # Register your models here.
 admin.site.register(AddItem)
@@ -14,4 +14,5 @@ class JournalAdmin(admin.ModelAdmin):
     def publish_journals(self, request, queryset):
         queryset.update(status='published')
         self.message_user(request, 'Selected journals have been published.')
-    publish_journals.short_description = 'Publish selected journals'
+    publish_journals.short_description = 'Publish selected journals'    
+admin.site.register(JournalEntry)

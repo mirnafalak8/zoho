@@ -98,8 +98,8 @@
                     <button class="btn btn-success btn-publish">Publish</button>
                     <button class="btn btn-outline-danger">Template</button>
                     <div class="">
-                        <a href="#" class="text-white" style="margin-right: 10px;"><i class="fa fa-edit"></i></a>
-                        <a href="#" class="text-white" style="margin-right: 10px;"><i class="fa fa-file-pdf"></i></a>
+                      <a href="{% url 'edit_journal' journal.id %}" class="text-white" style="margin-right: 10px;"><i class="fa fa-edit"></i></a>
+                      <a href="#" class="text-white" style="margin-right: 10px;"><i class="fa fa-file-pdf"></i></a>
                         <a href="#" class="text-white" style="margin-right: 10px;"><i class="fa fa-print"></i></a>
                         <a href="#" class="text-white" style="margin-right: 10px;"><i class="fa fa-paperclip"></i></a>
                         <a href="#" class="text-white" style="margin-right: 10px;"><i class="fa fa-trash"></i></a>
@@ -161,6 +161,21 @@
           }
         });
       });
+      $('.details-section').on('click', '.edit-journal', function() {
+    var journalId = $(this).data('journal-id');
+    var editJournalUrl = "{% url 'edit_journal' 0 %}".replace('0', journalId);
+    $('.details-section').html('<p>Loading journal edit form...</p>');
+    $.ajax({
+      url: editJournalUrl,
+      method: 'GET',
+      success: function(response) {
+        $('.details-section').html(response);
+      },
+      error: function() {
+        $('.details-section').html('<p>Failed to load journal edit form.</p>');
+      }
+    });
+  });
     });
     </script>
 {% endblock %}

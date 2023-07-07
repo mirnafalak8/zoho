@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Journal Details</title>
+</head>
+<body>
+  <h4>Journal Details:</h4>
+  <p>Date: <input type="date" name="date" value="{{ journal.date }}"></p>
+  <p>Journal No: <input type="text" name="journal_no" value="{{ journal.journal_no }}"></p>
+  <p>Reference No: <input type="text" name="reference_no" value="{{ journal.reference_no }}"></p>
+  <p>Notes: <textarea name="notes">{{ journal.notes }}</textarea></p>
+  <p>Currency: {{ journal.currency }}</p>
+  <ul>
+    {% for entry in journal_entries %}
+    <li>
+      Account name: <input type="text" name="account" value="{{ entry.account }}"> -
+      Description: <input type="text" name="description" value="{{ entry.description }}"> -
+      Contact: <input type="text" name="contact" value="{{ entry.contact }}">,
+      Debits: <input type="number" name="debits" value="{{ entry.debits }}">,
+      Credits: <input type="number" name="credits" value="{{ entry.credits }}">
+    </li>
+    {% endfor %}
+  </ul>
+  <p>Total Debit: <input type="number" name="total_debit" value="{{ journal.total_debit }}"></p>
+  <p>Total Credit: <input type="number" name="total_credit" value="{{ journal.total_credit }}"></p>
+  <p>Difference: <input type="number" name="difference" value="{{ journal.difference }}"></p>
+  <p>Status: <span id="status">{{ journal.status }}</span></p>
+</body>
+</html>

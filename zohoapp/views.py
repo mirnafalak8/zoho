@@ -2669,7 +2669,14 @@ def add_journal(request):
 
 def journal_list(request):
     journals = Journal.objects.all()
-    return render(request, 'journal_list.html', {'journals': journals})
+    journal = None
+    if request.method == 'GET':
+        journal_id = request.GET.get('journal_id')
+        if journal_id:
+            journal = get_object_or_404(Journal, id=journal_id)
+
+    return render(request, 'journal_list.html', {'journals': journals, 'journal': journal})
+
 
 def get_journal_details(request):
     journal_id = request.GET.get('journal_id')
@@ -2702,3 +2709,32 @@ def draft_journal(request):
 def published_journal(request):
     journals = Journal.objects.filter(status='published')
     return render(request, 'published_journal.html', {'journals': journals})
+
+def edit_journal(request, journal_id):
+    journal = get_object_or_404(Journal, id=journal_id)
+    journal_entries = JournalEntry.objects.filter(journal=journal)
+
+    if request.method == 'POST':
+        # Retrieve the updated values from the form
+        date = request.POST.get('date')
+        journal_no = request.POST.get('journal_no')
+        reference_no = request.POST.get('reference_no')
+        notes = request.POST.get('notes')
+        total_debit = request.POST.get('total_debit')
+        total_credit = request.POST.get('total_credit')
+        difference = request.POST.get('difference')
+
+        # Update the journal object
+        journal.date = date
+        journal.journal_no = journal_no
+        journal.reference_no = reference_no
+        journal.notes = notes
+        journal.total_debit = total_debit
+        journal.total_credit = total_credit
+        journal.difference = difference
+        journal.save()
+
+        # Redirect to the journal details page
+        return redirect('journal_details', journal_id=journal.id)
+
+    return render(request, 'edit_journal.html', {'journal': journal, 'journal_entries': journal_entries})
