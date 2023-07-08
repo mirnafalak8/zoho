@@ -25,9 +25,9 @@
         <div class="col-md-9 text-right">
             <div class="row align-items-center">
                 <div class="col-md-5">
-                    <form action="#" method="GET">
+                    <form action="{% url 'manual_journal_home' %}" method="GET">
                         <div class="input-group">
-                            <input type="text" name="query" placeholder="Search" class="form-control  custom-height">
+                            <input type="text" id="searchInput" name="query" placeholder="Search" class="form-control custom-height" value="{{ query }}">
                             <div class="input-group-append">
                                 <button type="submit" class="btn btn-outline-secondary  custom-height">Search</button>
                             </div>
@@ -94,6 +94,51 @@
         </table>
     </div>
 </section>
+<script>
+    $(document).ready(function() {
+        $('#searchInput').on('input', function() {
+            searchJournals();
+        });
+
+        function searchJournals() {
+            var query = $('#searchInput').val();
+            $.ajax({
+                type: 'GET',
+                url: '',
+                data: {
+                    query: query
+                },
+                success: function(response) {
+                    updateJournalTable(response.journals);
+                }
+            });
+        }
+
+        function updateJournalTable(journals) {
+            var tableBody = $('#journalTableBody');
+            tableBody.empty();
+
+            if (journals.length > 0) {
+                $.each(journals, function(index, journal) {
+                    var row = $('<tr></tr>');
+                    row.append('<td>' + journal.date + '</td>');
+                    row.append('<td>' + journal.journal_no + '</td>');
+                    row.append('<td>' + journal.reference_no + '</td>');
+                    row.append('<td>' + journal.status + '</td>');
+                    row.append('<td>' + journal.notes + '</td>');
+                    row.append('<td><i class="fa fa-inr"></i>' + journal.total_debit + '</td>');
+
+                    tableBody.append(row);
+                });
+            } else {
+                var row = $('<tr></tr>');
+                row.append('<td colspan="6">No journals found.</td>');
+
+                tableBody.append(row);
+            }
+        }
+    });
+</script>
 
 {% endblock %}
 

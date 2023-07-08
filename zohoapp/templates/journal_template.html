@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+  <div class="container-fluid mt-5">
+    <div class="row">
+      <div class="col-md-12">
+        <h3>Journal Template</h3>
+        <div>
+          {% if journal %}
+            <p>Journal ID: {{ journal.id }}</p>
+            <p>Journal Date: {{ journal.date }}</p>
+            <!-- Add more journal details here -->
+          {% else %}
+            <p>No journal selected.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

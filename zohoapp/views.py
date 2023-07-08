@@ -2603,8 +2603,21 @@ def edit_sales_order(request,id):
 
 
 def manual_journal_home(request):
-    journal = Journal.objects.all()
-    context = {'journal': journal}
+    query = request.GET.get('query')
+
+    if query:
+        journals = Journal.objects.filter(
+            Q(date__icontains=query) |
+            Q(journal_no__icontains=query) |
+            Q(reference_no__icontains=query) |
+            Q(status__icontains=query) |
+            Q(notes__icontains=query) |
+            Q(total_debit__icontains=query)
+        )
+    else:
+        journals = Journal.objects.all()
+
+    context = {'journal': journals, 'query': query}
     return render(request, 'manual_journal.html', context)
 
 def add_journal(request):
@@ -2668,7 +2681,19 @@ def add_journal(request):
     return render(request, 'add_journal.html', {'accounts': accounts, 'vendors': vendors, 'customers': customers})
 
 def journal_list(request):
+    query = request.GET.get('query')
     journals = Journal.objects.all()
+
+    if query:
+        journals = journals.filter(
+            Q(date__icontains=query) |
+            Q(journal_no__icontains=query) |
+            Q(reference_no__icontains=query) |
+            Q(status__icontains=query) |
+            Q(notes__icontains=query) |
+            Q(total_debit__icontains=query)
+        )
+
     journal = None
     if request.method == 'GET':
         journal_id = request.GET.get('journal_id')
@@ -2677,12 +2702,20 @@ def journal_list(request):
 
     return render(request, 'journal_list.html', {'journals': journals, 'journal': journal})
 
-
 def get_journal_details(request):
     journal_id = request.GET.get('journal_id')
     journal = get_object_or_404(Journal, id=journal_id)
     journal_entries = JournalEntry.objects.filter(journal=journal)
     return render(request, 'journal_details.html', {'journal': journal, 'journal_entries': journal_entries})
+
+def journal_template(request):
+    journal_id = request.GET.get('journal_id')
+    try:
+        journal = Journal.objects.get(id=journal_id)
+    except Journal.DoesNotExist:
+        journal = None
+    return render(request, 'journal_template.html', {'journal': journal})
+
 
 def publish_journal(request):
     if request.method == 'POST':
@@ -2695,46 +2728,106 @@ def publish_journal(request):
         return JsonResponse({'status': 'error'})
     
 def draft_journal_list(request):
+    query = request.GET.get('query')
     journals = Journal.objects.filter(status='draft')
+
+    if query:
+        journals = journals.filter(
+            Q(date__icontains=query) |
+            Q(journal_no__icontains=query) |
+            Q(reference_no__icontains=query) |
+            Q(status__icontains=query) |
+            Q(notes__icontains=query) |
+            Q(total_debit__icontains=query)
+        )
+
     return render(request, 'draft_journal_list.html', {'journals': journals})
 
 def published_journal_list(request):
+    query = request.GET.get('query')
     journals = Journal.objects.filter(status='published')
+
+    if query:
+        journals = journals.filter(
+            Q(date__icontains=query) |
+            Q(journal_no__icontains=query) |
+            Q(reference_no__icontains=query) |
+            Q(status__icontains=query) |
+            Q(notes__icontains=query) |
+            Q(total_debit__icontains=query)
+        )
+
     return render(request, 'published_journal_list.html', {'journals': journals})
 
 def draft_journal(request):
+    query = request.GET.get('query')
     journals = Journal.objects.filter(status='draft')
+
+    if query:
+        journals = journals.filter(
+            Q(date__icontains=query) |
+            Q(journal_no__icontains=query) |
+            Q(reference_no__icontains=query) |
+            Q(status__icontains=query) |
+            Q(notes__icontains=query) |
+            Q(total_debit__icontains=query)
+        )
+
     return render(request, 'draft_journal.html', {'journals': journals})
 
 def published_journal(request):
+    query = request.GET.get('query')
     journals = Journal.objects.filter(status='published')
+
+    if query:
+        journals = journals.filter(
+            Q(date__icontains=query) |
+            Q(journal_no__icontains=query) |
+            Q(reference_no__icontains=query) |
+            Q(status__icontains=query) |
+            Q(notes__icontains=query) |
+            Q(total_debit__icontains=query)
+        )
+
     return render(request, 'published_journal.html', {'journals': journals})
 
 def edit_journal(request, journal_id):
-    journal = get_object_or_404(Journal, id=journal_id)
-    journal_entries = JournalEntry.objects.filter(journal=journal)
-
+    journal = Journal.objects.get(id=journal_id)
     if request.method == 'POST':
-        # Retrieve the updated values from the form
-        date = request.POST.get('date')
-        journal_no = request.POST.get('journal_no')
-        reference_no = request.POST.get('reference_no')
-        notes = request.POST.get('notes')
-        total_debit = request.POST.get('total_debit')
-        total_credit = request.POST.get('total_credit')
-        difference = request.POST.get('difference')
-
-        # Update the journal object
-        journal.date = date
-        journal.journal_no = journal_no
-        journal.reference_no = reference_no
-        journal.notes = notes
-        journal.total_debit = total_debit
-        journal.total_credit = total_credit
-        journal.difference = difference
+        journal.date = request.POST.get('date')
+        journal.journal_no = request.POST.get('journal_no')
+        journal.reference_no = request.POST.get('reference_no')
+        journal.notes = request.POST.get('notes')
+        journal.currency = request.POST.get('currency')
+        journal.cash_journal = bool(request.POST.get('cash_journal'))
         journal.save()
 
-        # Redirect to the journal details page
-        return redirect('journal_details', journal_id=journal.id)
+        JournalEntry.objects.filter(journal=journal).delete()
 
-    return render(request, 'edit_journal.html', {'journal': journal, 'journal_entries': journal_entries})
+        account_list = request.POST.getlist('account')
+        description_list = request.POST.getlist('description')
+        contact_list = request.POST.getlist('contact')
+        debits_list = request.POST.getlist('debits')
+        credits_list = request.POST.getlist('credits')
+
+        for i in range(len(account_list)):
+            account = account_list[i]
+            description = description_list[i]
+            contact = contact_list[i]
+            debits = debits_list[i]
+            credits = credits_list[i]
+
+            journal_entry = JournalEntry(
+                journal=journal,
+                account=account,
+                description=description,
+                contact=contact,
+                debits=debits,
+                credits=credits
+            )
+            journal_entry.save()
+
+        return redirect('journal_list')
+    else:
+        return render(request, 'edit_journal.html', {'journal': journal})
+

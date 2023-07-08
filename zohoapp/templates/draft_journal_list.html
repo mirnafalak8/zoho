@@ -25,10 +25,10 @@
         <div class="col-md-9 text-right">
             <div class="row align-items-center">
                 <div class="col-md-5">
-                    <form action="#" method="GET">
+                    <form action="{% url 'draft_journal_list' %}" method="GET">
                         <div class="input-group">
-                            <input type="text" name="query" placeholder="Search" class="form-control  custom-height">
-                            <div class="input-group-append">
+                        <input type="text" name="query" placeholder="Search" class="form-control custom-height">
+                        <div class="input-group-append">
                                 <button type="submit" class="btn btn-outline-secondary  custom-height">Search</button>
                             </div>
                         </div>
