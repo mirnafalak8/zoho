@@ -17,13 +17,15 @@
                 <h2 class="text-white">Edit Journal</h2>
             </div>
             <div class="col-md-12">
-                <form method="POST" action="{% url 'edit_journal' journal_id=journal.id %}" class="custom-form" enctype="multipart/form-data">
+                <form method="POST" action="{% url 'edit_journal' journal.id%}" class="custom-form" enctype="multipart/form-data">
                     {% csrf_token %}
                     <div class="row">
+                        <!-- <h4>Journal Details:</h4>
+                        <p>Journal ID: {{ journal.id }}</p>  -->
                         <div class="col-md-4">
                             <div class="form-group">
                                 <label for="">Date:</label>
-                                <input type="date" name="date" class="form-control" value="{{ journal.date }}" required>
+                                <input type="date" name="date" class="form-control" value="{{ journal.date|date:'Y-m-d' }}" required>
                             </div>
                         </div>
                         <div class="col-md-4">
@@ -50,7 +52,7 @@
                             <div class="form-group">
                                 <label for="">Currency:</label>
                                 <select name="currency" class="form-control">
-                                    <option value="INR" {% if journal.currency == 'INR' %}selected{% endif %}>INR-Indian Rupee</option>
+                                    <option value="INR">INR-Indian Rupee</option>
                                 </select>
                             </div>
                         </div>
@@ -79,31 +81,31 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {% for entry in journal.journalentry_set.all %}
+                            {% for journal_entry in journal.journalentry_set.all %}
                             <tr>
                                 <td>{{ forloop.counter }}</td>
                                 <td>
                                     <select name="account" class="form-control">
                                         <option value="">Select Account</option>
                                         {% for account in accounts %}
-                                        <option value="{{ account.accountName }}" {% if entry.account == account.accountName %}selected{% endif %}>{{ account.accountName }}</option>
+                                        <option value="{{ account.accountName }}" {% if journal_entry.account == account.accountName %}selected{% endif %}>{{ account.accountName }}</option>
                                         {% endfor %}
                                     </select>
                                 </td>
-                                <td><input type="text" name="description" class="form-control" value="{{ entry.description }}"></td>
+                                <td><input type="text" name="description" class="form-control" value="{{ journal_entry.description }}"></td>
                                 <td>
                                     <select name="contact" class="form-control">
                                         <option value="">Select Contact (INR)</option>
                                         {% for customer in customers %}
-                                        <option value="{{ customer.customerName }}" {% if entry.contact == customer.customerName %}selected{% endif %}>{{ customer.customerName }}</option>
+                                        <option value="{{ customer.customerName }}" {% if journal_entry.contact == customer.customerName %}selected{% endif %}>{{ customer.customerName }}</option>
                                         {% endfor %}
                                         {% for vendor in vendors %}
-                                        <option value="{{ vendor.vendor_display_name }}" {% if entry.contact == vendor.vendor_display_name %}selected{% endif %}>{{ vendor.vendor_display_name }}</option>
+                                        <option value="{{ vendor.vendor_display_name }}" {% if journal_entry.contact == vendor.vendor_display_name %}selected{% endif %}>{{ vendor.vendor_display_name }}</option>
                                         {% endfor %}
                                     </select>
                                 </td>
-                                <td><input type="number" name="debits" class="form-control" onchange="calculateTotals()" value="{{ entry.debits }}"></td>
-                                <td><input type="number" name="credits" class="form-control" onchange="calculateTotals()" value="{{ entry.credits }}"></td>
+                                <td><input type="number" name="debits" class="form-control" value="{{ journal_entry.debits }}" onchange="calculateTotals()"></td>
+                                <td><input type="number" name="credits" class="form-control" value="{{ journal_entry.credits }}" onchange="calculateTotals()"></td>
                                 <td><button type="button" class="btn btn-danger" onclick="deleteRow(this)"><i class="fa fa-times"></i></button></td>
                             </tr>
                             {% endfor %}
@@ -118,118 +120,118 @@
                                 <input type="file" name="attachment" class="form-control-file">
                             </div>
                         </div>
-<div class="col-md-6">
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Subtotal</th>
-                <th>Debit</th>
-                <th>Credit</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td>Total Amount</td>
-                <td><input type="number" class="form-control" id="totalDebit" name="total_debit" value="{{ journal.total_debit }}" placeholder="0"></td>
-                <td><input type="number" class="form-control" id="totalCredit" name="total_credit" value="{{ journal.total_credit }}" placeholder="0"></td>
-            </tr>
-            <tr>
-                <td>Difference</td>
-                <td><input type="number" class="form-control" id="debitDifference" name="difference" value="{{ journal.difference }}" placeholder="0"></td>
-                <td><input type="number" class="form-control" id="creditDifference" placeholder="0"></td>
-            </tr>
-        </tbody>
-    </table>
-</div>
-</div>
-<div class="row justify-content-center mt-4">
-<div class="col-md-4">
-    <button type="button" class="btn btn-outline-secondary" onClick="javascript:history.go(-1);">Back</button>
-</div>
-<div class="col-md-4 text-center">
-    <button type="submit" class="btn btn-secondary w-50">Save</button>
-</div>
-<div class="col-md-4 text-end">
-    <button type="button" class="btn btn-outline-secondary" onclick="clearForm()">Clear</button>
-</div>
-</div>
-</form>
-</div>
-</div>
-</div>
+                        <div class="col-md-6">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Subtotal</th>
+                                        <th>Debit</th>
+                                        <th>Credit</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Total Amount</td>
+                                        <td><input type="number" class="form-control" id="totalDebit" placeholder="0" value="{{ journal.total_debit }}"></td>
+                                        <td><input type="number" class="form-control" id="totalCredit" placeholder="0" value="{{ journal.total_credit }}"></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Difference</td>
+                                        <td><input type="number" class="form-control" id="debitDifference" placeholder="0" value="{{ journal.difference }}"></td>
+                                        <td><input type="number" class="form-control" id="creditDifference" placeholder="0"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="row justify-content-center mt-4">
+                        <div class="col-md-4">
+                            <button type="button" class="btn btn-outline-secondary" onClick="javascript:history.go(-1);">Back</button>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <button type="submit" class="btn btn-secondary w-50">Save</button>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <button type="button" class="btn btn-outline-secondary" onclick="clearForm()">Clear</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 </section>
 <script>
-function addRow() {
-    var table = document.getElementById("journal_table");
-    var rowCount = table.rows.length;
-    var row = table.insertRow(rowCount);
+    function addRow() {
+        var table = document.getElementById("journal_table");
+        var rowCount = table.rows.length;
+        var row = table.insertRow(rowCount);
 
-    var numberCell = row.insertCell(0);
-    var accountCell = row.insertCell(1);
-    var descriptionCell = row.insertCell(2);
-    var contactCell = row.insertCell(3);
-    var debitsCell = row.insertCell(4);
-    var creditsCell = row.insertCell(5);
-    var actionCell = row.insertCell(6);
+        var numberCell = row.insertCell(0);
+        var accountCell = row.insertCell(1);
+        var descriptionCell = row.insertCell(2);
+        var contactCell = row.insertCell(3);
+        var debitsCell = row.insertCell(4);
+        var creditsCell = row.insertCell(5);
+        var actionCell = row.insertCell(6);
 
-    numberCell.innerHTML = rowCount;
-    accountCell.innerHTML = '<select name="account" class="form-control"><option value="">Select Account</option>{% for account in accounts %}<option value="{{ account.accountName }}">{{ account.accountName }}</option>{% endfor %}</select>';
-    descriptionCell.innerHTML = '<input type="text" name="description" class="form-control">';
-    var options = '';
-    options += '<option value="">Select Contact</option>';
+        numberCell.innerHTML = rowCount;
+        accountCell.innerHTML = '<select name="account" class="form-control"><option value="">Select Account</option>{% for account in accounts %}<option value="{{ account.accountName }}">{{ account.accountName }}</option>{% endfor %}</select>';
+        descriptionCell.innerHTML = '<input type="text" name="description" class="form-control">';
+        var options = '';
+        options += '<option value="">Select Contact</option>';
 
-    '{% for vendor in vendors %}'
-        options += '<option value="{{ vendor.vendor_display_name }}">{{ vendor.vendor_display_name }}</option>';
-    '{% endfor %}'
+        '{% for vendor in vendors %}'
+            options += '<option value="{{ vendor.vendor_display_name }}">{{ vendor.vendor_display_name }}</option>';
+        '{% endfor %}'
 
-    '{% for customer in customers %}'
-        options += '<option value="{{ customer.customerName }}">{{ customer.customerName }}</option>';
-    '{% endfor %}'
+        '{% for customer in customers %}'
+            options += '<option value="{{ customer.customerName }}">{{ customer.customerName }}</option>';
+        '{% endfor %}'
 
-    contactCell.innerHTML = '<select name="contact" class="form-control">' + options + '</select>';
+        contactCell.innerHTML = '<select name="contact" class="form-control">' + options + '</select>';
 
-    debitsCell.innerHTML = '<input type="number" name="debits" class="form-control" onchange="calculateTotals()">';
-    creditsCell.innerHTML = '<input type="number" name="credits" class="form-control" onchange="calculateTotals()">';
-    actionCell.innerHTML = '<button type="button" class="btn btn-danger" onclick="deleteRow(this)"><i class="fa fa-times"></i></button>';
-}
-
-function deleteRow(button) {
-    var row = button.parentNode.parentNode;
-    row.parentNode.removeChild(row);
-}
-
-function clearForm() {
-    var form = document.querySelector('form');
-    form.reset();
-}
-
-function calculateTotals() {
-    var debitInputs = document.querySelectorAll('input[name="debits"]');
-    var creditInputs = document.querySelectorAll('input[name="credits"]');
-    var totalDebit = 0;
-    var totalCredit = 0;
-
-    debitInputs.forEach(function (input) {
-        totalDebit += parseFloat(input.value) || 0;
-    });
-
-    creditInputs.forEach(function (input) {
-        totalCredit += parseFloat(input.value) || 0;
-    });
-
-    document.getElementById('totalDebit').value = totalDebit.toFixed(2);
-    document.getElementById('totalCredit').value = totalCredit.toFixed(2);
-
-    var difference = totalDebit - totalCredit;
-
-    if (difference < 0) {
-        document.getElementById('debitDifference').value = Math.abs(difference).toFixed(2);
-        document.getElementById('creditDifference').value = "0.00";
-    } else {
-        document.getElementById('debitDifference').value = "0.00";
-        document.getElementById('creditDifference').value = difference.toFixed(2);
+        debitsCell.innerHTML = '<input type="number" name="debits" class="form-control" onchange="calculateTotals()">';
+        creditsCell.innerHTML = '<input type="number" name="credits" class="form-control"onchange="calculateTotals()">';
+        actionCell.innerHTML = '<button type="button" class="btn btn-danger" onclick="deleteRow(this)"><i class="fa fa-times"></i></button>';
     }
-}
+
+    function deleteRow(button) {
+        var row = button.parentNode.parentNode;
+        row.parentNode.removeChild(row);
+    }
+
+    function clearForm() {
+        var form = document.querySelector('form');
+        form.reset();
+    }
+
+    function calculateTotals() {
+        var debitInputs = document.querySelectorAll('input[name="debits"]');
+        var creditInputs = document.querySelectorAll('input[name="credits"]');
+        var totalDebit = 0;
+        var totalCredit = 0;
+
+        debitInputs.forEach(function (input) {
+            totalDebit += parseFloat(input.value) || 0;
+        });
+
+        creditInputs.forEach(function (input) {
+            totalCredit += parseFloat(input.value) || 0;
+        });
+
+        document.getElementById('totalDebit').value = totalDebit.toFixed(2);
+        document.getElementById('totalCredit').value = totalCredit.toFixed(2);
+
+        var difference = totalDebit - totalCredit;
+
+        if (difference < 0) {
+            document.getElementById('debitDifference').value = Math.abs(difference).toFixed(2);
+            document.getElementById('creditDifference').value = "0.00";
+        } else {
+            document.getElementById('debitDifference').value = "0.00";
+            document.getElementById('creditDifference').value = difference.toFixed(2);
+        }
+    }
 </script>
 
 {% endblock %}

@@ -93,17 +93,17 @@
             <div class="col-md-7">
                 <div class="d-flex justify-content-between align-items-center">
                     <button class="btn btn-success btn-publish">Publish</button>
-                    <a href="#"><button class="btn btn-outline-danger">Template</button></a>
+                    <a href="#"><button class="btn btn-outline-danger template-button">Template</button></a>
                     <div class="">
-                      <a href="#" class="edit-journal text-white" style="margin-right: 10px;" data-journal-id="{{ journal.id }}"><i class="fa fa-edit"></i></a>
-                      <a href="#" class="text-white" style="margin-right: 10px;"><i class="fa fa-file-pdf"></i></a>
+                        <a href="#" class="text-white" style="margin-right: 10px;"><i class="fa fa-edit"></i></a>
+                        <a href="#" class="text-white" style="margin-right: 10px;"><i class="fa fa-file-pdf"></i></a>
                         <a href="#" class="text-white" style="margin-right: 10px;"><i class="fa fa-print"></i></a>
                         <a href="#" class="text-white" style="margin-right: 10px;"><i class="fa fa-paperclip"></i></a>
                         <a href="#" class="text-white" style="margin-right: 10px;"><i class="fa fa-trash"></i></a>
                     </div>
                 </div>
                 <div class="details-section mt-3">
-                    
+                  
                 </div>
             </div>
         </div>
@@ -132,7 +132,12 @@
           }
         });
       });
-    
+      $('.edit-button').click(function() {
+    var journalId = $(this).data('journal-id');
+    var editJournalUrl = "{% url 'edit_journal' journal_id=0 %}".replace('0', journalId);
+    window.location.href = editJournalUrl;
+    });
+
       $('.btn-publish').click(function() {
         var journalId = $('.list-item.active').data('journal-id');
         var publishUrl = "{% url 'publish_journal' %}";
@@ -147,10 +152,8 @@
             journal_id: journalId,
           },
           success: function(response) {
-            // Update the status in the details section
             $('.details-section .status').text('Published');
     
-            // Update the status in the list item
             $('.list-item.active .status').text('Published');
           },
           error: function() {
@@ -159,13 +162,12 @@
         });
       });
       $('.template-button').click(function() {
-            var detailsContent = $('.details-section').html();
-            sessionStorage.setItem('journalDetailsContent', detailsContent);
-        });
-        $('.template-button').click(function() {
-      var selectedJournalId = sessionStorage.getItem('selectedJournalId');
-      window.location.href = "{% url 'journal_template' %}?journal_id=" + selectedJournalId;
-    });
+    var selectedJournalId = $('.list-item.active').data('journal-id');
+    sessionStorage.setItem('selectedJournalId', selectedJournalId);
+    var journalDetailsUrl = "{% url 'journal_details' %}?journal_id=" + selectedJournalId;
+    window.location.href = journalDetailsUrl;
+});
+
     });
 </script>
 {% endblock %}

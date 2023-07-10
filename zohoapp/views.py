@@ -2694,13 +2694,21 @@ def journal_list(request):
             Q(total_debit__icontains=query)
         )
 
-    journal = None
-    if request.method == 'GET':
-        journal_id = request.GET.get('journal_id')
-        if journal_id:
-            journal = get_object_or_404(Journal, id=journal_id)
+    return render(request, 'journal_list.html', {'journals': journals})
 
-    return render(request, 'journal_list.html', {'journals': journals, 'journal': journal})
+def journal_details(request):
+    journal_id = request.GET.get('journal_id')
+    journal = get_object_or_404(Journal, id=journal_id)
+    journal_entries = JournalEntry.objects.filter(journal=journal)
+    return render(request, 'journal_template.html', {'journal': journal,'journal_entries': journal_entries})
+
+
+def delete_journal(request, journal_id):
+    journal = Journal.objects.get(id=journal_id)    
+    journal_entries = JournalEntry.objects.filter(journal=journal)    
+    journal_entries.delete()    
+    journal.delete()    
+    return redirect('journal_list')
 
 def get_journal_details(request):
     journal_id = request.GET.get('journal_id')
@@ -2708,13 +2716,13 @@ def get_journal_details(request):
     journal_entries = JournalEntry.objects.filter(journal=journal)
     return render(request, 'journal_details.html', {'journal': journal, 'journal_entries': journal_entries})
 
-def journal_template(request):
-    journal_id = request.GET.get('journal_id')
-    try:
-        journal = Journal.objects.get(id=journal_id)
-    except Journal.DoesNotExist:
-        journal = None
-    return render(request, 'journal_template.html', {'journal': journal})
+# def journal_template(request):
+#     journal_id = request.GET.get('journal_id')
+#     try:
+#         journal = Journal.objects.get(id=journal_id)
+#     except Journal.DoesNotExist:
+#         journal = None
+#     return render(request, 'journal_template.html', {'journal': journal})
 
 
 def publish_journal(request):
@@ -2792,23 +2800,37 @@ def published_journal(request):
     return render(request, 'published_journal.html', {'journals': journals})
 
 def edit_journal(request, journal_id):
-    journal = Journal.objects.get(id=journal_id)
-    if request.method == 'POST':
-        journal.date = request.POST.get('date')
-        journal.journal_no = request.POST.get('journal_no')
-        journal.reference_no = request.POST.get('reference_no')
-        journal.notes = request.POST.get('notes')
-        journal.currency = request.POST.get('currency')
-        journal.cash_journal = bool(request.POST.get('cash_journal'))
-        journal.save()
+    journal = get_object_or_404(Journal, id=journal_id)
+    accounts = Account.objects.all()
+    vendors = vendor_table.objects.all()
+    customers = customer.objects.all()
 
-        JournalEntry.objects.filter(journal=journal).delete()
+    if request.method == 'POST':
+        date = request.POST.get('date')
+        journal_no = request.POST.get('journal_no')
+        reference_no = request.POST.get('reference_no')
+        notes = request.POST.get('notes')
+        currency = request.POST.get('currency')
+        cash_journal = request.POST.get('cash_journal') == 'True'
+
+        journal.date = date
+        journal.journal_no = journal_no
+        journal.reference_no = reference_no
+        journal.notes = notes
+        journal.currency = currency
+        journal.cash_journal = cash_journal
+        journal.save()
 
         account_list = request.POST.getlist('account')
         description_list = request.POST.getlist('description')
         contact_list = request.POST.getlist('contact')
         debits_list = request.POST.getlist('debits')
         credits_list = request.POST.getlist('credits')
+
+        total_debit = 0
+        total_credit = 0
+
+        JournalEntry.objects.filter(journal=journal).delete()
 
         for i in range(len(account_list)):
             account = account_list[i]
@@ -2827,7 +2849,85 @@ def edit_journal(request, journal_id):
             )
             journal_entry.save()
 
-        return redirect('journal_list')
-    else:
-        return render(request, 'edit_journal.html', {'journal': journal})
+            total_debit += float(debits) if debits else 0
+            total_credit += float(credits) if credits else 0
 
+        difference = total_debit - total_credit
+
+        journal.total_debit = total_debit
+        journal.total_credit = total_credit
+        journal.difference = difference
+        journal.save()
+
+        return redirect('journal_list')
+
+    return render(request, 'edit_journal.html', {'journal': journal, 'accounts': accounts, 'vendors': vendors, 'customers': customers})
+
+# def edit_journal(request, journal_id):
+#     journal = get_object_or_404(Journal, id=journal_id)
+#     accounts = Account.objects.all()
+#     vendors = vendor_table.objects.all()
+#     customers = customer.objects.all()
+#     return render(request, 'edit_journal.html', {'journal': journal, 'accounts': accounts, 'vendors': vendors, 'customers': customers})
+
+# def update_journal(request,journal_id):
+#     journal = get_object_or_404(Journal, id=journal_id)
+#     if request.method == 'POST':
+#         date = request.POST.get('date')
+#         journal_no = request.POST.get('journal_no')
+#         reference_no = request.POST.get('reference_no')
+#         notes = request.POST.get('notes')
+#         currency = request.POST.get('currency')
+#         cash_journal = request.POST.get('cash_journal') == 'True'
+
+#         journal.date = date
+#         journal.journal_no = journal_no
+#         journal.reference_no = reference_no
+#         journal.notes = notes
+#         journal.currency = currency
+#         journal.cash_journal = cash_journal
+#         journal.save()
+
+#         account_list = request.POST.getlist('account')
+#         description_list = request.POST.getlist('description')
+#         contact_list = request.POST.getlist('contact')
+#         debits_list = request.POST.getlist('debits')
+#         credits_list = request.POST.getlist('credits')
+
+#         total_debit = 0
+#         total_credit = 0
+
+#         JournalEntry.objects.filter(journal=journal).delete()
+
+#         for i in range(len(account_list)):
+#             account = account_list[i]
+#             description = description_list[i]
+#             contact = contact_list[i]
+#             debits = debits_list[i]
+#             credits = credits_list[i]
+
+#             journal_entry = JournalEntry(
+#                 journal=journal,
+#                 account=account,
+#                 description=description,
+#                 contact=contact,
+#                 debits=debits,
+#                 credits=credits
+#             )
+#             journal_entry.save()
+
+#             total_debit += float(debits) if debits else 0
+#             total_credit += float(credits) if credits else 0
+
+#         difference = total_debit - total_credit
+
+#         journal.total_debit = total_debit
+#         journal.total_credit = total_credit
+#         journal.difference = difference
+#         journal.save()
+
+#         return redirect('journal_details')
+#     accounts = Account.objects.all()
+#     vendors = vendor_table.objects.all()
+#     customers = customer.objects.all()
+#     return render(request, 'edit_journal.html', {'journal': journal, 'accounts': accounts, 'vendors': vendors, 'customers': customers})
