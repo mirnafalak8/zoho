@@ -1,3 +1,4 @@
+import base64
 from django.shortcuts import render,redirect,get_object_or_404
 from django.http import HttpResponse,HttpResponseRedirect
 from django.contrib import messages
@@ -13,6 +14,8 @@ from django.core.mail import EmailMessage
 from django.views import View
 from .forms import EmailForm
 from django.http import JsonResponse
+import json
+
 
 # Create your views here.
 def index(request):
@@ -2716,15 +2719,6 @@ def get_journal_details(request):
     journal_entries = JournalEntry.objects.filter(journal=journal)
     return render(request, 'journal_details.html', {'journal': journal, 'journal_entries': journal_entries})
 
-# def journal_template(request):
-#     journal_id = request.GET.get('journal_id')
-#     try:
-#         journal = Journal.objects.get(id=journal_id)
-#     except Journal.DoesNotExist:
-#         journal = None
-#     return render(request, 'journal_template.html', {'journal': journal})
-
-
 def publish_journal(request):
     if request.method == 'POST':
         journal_id = request.POST.get('journal_id')
@@ -2863,71 +2857,17 @@ def edit_journal(request, journal_id):
 
     return render(request, 'edit_journal.html', {'journal': journal, 'accounts': accounts, 'vendors': vendors, 'customers': customers})
 
-# def edit_journal(request, journal_id):
-#     journal = get_object_or_404(Journal, id=journal_id)
-#     accounts = Account.objects.all()
-#     vendors = vendor_table.objects.all()
-#     customers = customer.objects.all()
-#     return render(request, 'edit_journal.html', {'journal': journal, 'accounts': accounts, 'vendors': vendors, 'customers': customers})
+def save_pdf(request):
+    if request.method == 'POST':
+        pdf_data = request.POST.get('pdf_data')
+        decoded_pdf_data = base64.b64decode(pdf_data)
 
-# def update_journal(request,journal_id):
-#     journal = get_object_or_404(Journal, id=journal_id)
-#     if request.method == 'POST':
-#         date = request.POST.get('date')
-#         journal_no = request.POST.get('journal_no')
-#         reference_no = request.POST.get('reference_no')
-#         notes = request.POST.get('notes')
-#         currency = request.POST.get('currency')
-#         cash_journal = request.POST.get('cash_journal') == 'True'
+        with open('/path/to/your/journal.pdf', 'wb') as f:
+            f.write(decoded_pdf_data)
 
-#         journal.date = date
-#         journal.journal_no = journal_no
-#         journal.reference_no = reference_no
-#         journal.notes = notes
-#         journal.currency = currency
-#         journal.cash_journal = cash_journal
-#         journal.save()
+        with open('/path/to/your/journal.pdf', 'rb') as f:
+            response = HttpResponse(f.read(), content_type='application/pdf')
+            response['Content-Disposition'] = 'attachment; filename="journal.pdf"'
+            return response
 
-#         account_list = request.POST.getlist('account')
-#         description_list = request.POST.getlist('description')
-#         contact_list = request.POST.getlist('contact')
-#         debits_list = request.POST.getlist('debits')
-#         credits_list = request.POST.getlist('credits')
-
-#         total_debit = 0
-#         total_credit = 0
-
-#         JournalEntry.objects.filter(journal=journal).delete()
-
-#         for i in range(len(account_list)):
-#             account = account_list[i]
-#             description = description_list[i]
-#             contact = contact_list[i]
-#             debits = debits_list[i]
-#             credits = credits_list[i]
-
-#             journal_entry = JournalEntry(
-#                 journal=journal,
-#                 account=account,
-#                 description=description,
-#                 contact=contact,
-#                 debits=debits,
-#                 credits=credits
-#             )
-#             journal_entry.save()
-
-#             total_debit += float(debits) if debits else 0
-#             total_credit += float(credits) if credits else 0
-
-#         difference = total_debit - total_credit
-
-#         journal.total_debit = total_debit
-#         journal.total_credit = total_credit
-#         journal.difference = difference
-#         journal.save()
-
-#         return redirect('journal_details')
-#     accounts = Account.objects.all()
-#     vendors = vendor_table.objects.all()
-#     customers = customer.objects.all()
-#     return render(request, 'edit_journal.html', {'journal': journal, 'accounts': accounts, 'vendors': vendors, 'customers': customers})
+    return HttpResponse('Invalid request method')

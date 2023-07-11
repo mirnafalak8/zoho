@@ -411,6 +411,7 @@ class Journal(models.Model):
         ('draft', 'Draft'),
         ('published', 'Published'),
     )
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     date = models.DateField()
     journal_no = models.CharField(max_length=255)
     reference_no = models.CharField(max_length=255, blank=True)

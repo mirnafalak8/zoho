@@ -131,6 +131,8 @@ urlpatterns = [
     # path('update_journal/<int:journal_id>/', views.update_journal, name='update_journal'),
     path('journal_details/', views.journal_details, name='journal_details'),
     path('journal/delete/<int:journal_id>/',views.delete_journal, name='delete_journal'),
+    path('save_pdf/', views.save_pdf, name='save_pdf'),
+
 
 
 
