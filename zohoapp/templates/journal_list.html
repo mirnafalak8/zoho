@@ -33,44 +33,58 @@
     .custom-item:hover {
         color: white;
     }
-   
+    .btn-group {
+        display: inline-flex;
+    }
+
+    .btn-group > * {
+        margin-right: -2px;
+    }
+
+    .template-button {
+        display: none;
+    }
 </style>
 
 <section>
-  <div class="row" style="top: 7rem;">
-    <div class="col-md-5">
-        <div class="search-bar">
-            <form action="{% url 'journal_list' %}" method="GET" class="input-group">
-                <input type="text" name="query" placeholder="Search" class="form-control custom-height">
-                <div class="input-group-append">
-                    <button type="submit" class="btn btn-outline-secondary custom-height">Search</button>
-                </div>
-            </form>
+    <div class="row" style="top: 7rem;">
+        <div class="col-md-5">
+            <div class="search-bar">
+                <form action="{% url 'journal_list' %}" method="GET" class="input-group">
+                    <input type="text" name="query" placeholder="Search" class="form-control custom-height">
+                    <div class="input-group-append">
+                        <button type="submit" class="btn btn-outline-secondary custom-height">Search</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
-</div>
     <br>
     <div class="container-fluid mt-5">
         <div class="row">
             <div class="col-md-5 vertical-separator">
                 <div class="d-flex justify-content-between align-items-center">
                     <h3 class="mb">Manual Journal</h3>
-                    <a href="{% url 'add_journal' %}"><button class="btn btn-primary">+ New Journal</button></a>
-                    <div class="dropdown">
-                        <button class="btn btn-secondary dropdown-toggle" type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                        Filter
-                        </button>
-                        <ul class="dropdown-menu" aria-labelledby="filterDropdown">
-                            <li><a class="dropdown-item custom-item" href="#">All</a></li>
-                            <li><a class="dropdown-item custom-item" href="{% url 'draft_journal' %}">Draft</a></li>
-                            <li><a class="dropdown-item custom-item" href="{% url 'published_journal' %}">Published</a></li>
-                        </ul>
+                    <div class="btn-group" role="group">
+                        <a href="{% url 'add_journal' %}" class="btn btn-primary">+ New Journal</a>
+                        <div class="dropdown">
+                            <button class="btn btn-primary dropdown-toggle" type="button" id="filterDropdown"
+                                data-bs-toggle="dropdown" aria-expanded="false"></button>
+                            <ul class="dropdown-menu" aria-labelledby="filterDropdown">
+                                <li><a class="dropdown-item custom-item" href="#">All</a></li>
+                                <li><a class="dropdown-item custom-item" href="{% url 'draft_journal' %}">Draft</a>
+                                </li>
+                                <li><a class="dropdown-item custom-item"
+                                        href="{% url 'published_journal' %}">Published</a></li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
 
                 <div class="list-group mt-3">
                     {% for journal in journals %}
-                    <a href="#" class="list-item" data-journal-id="{{ journal.id }}" data-journal-details-url="{% url 'get_journal_details' %}">
+                    <a href="#" class="list-item" data-journal-id="{{ journal.id }}"
+                        data-journal-details-url="{% url 'get_journal_details' %}">
                         <div class="d-flex justify-content-between text-white">
                             <span>{{ journal.date }}</span>
                             <span><i class="fa fa-inr"></i>{{ journal.total_debit }}</span>
@@ -79,94 +93,100 @@
                             <span>{{ journal.journal_no }}</span>
                             <!-- <span>{{ journal.status }}</span> -->
                             {% if journal.status == 'draft' %}
-                                <span class="status draft" style="color: orangered;">{{ journal.status }}</span>
-                             {% elif journal.status == 'published' %}
-                                <span class="status published text-success">{{ journal.status }}</span>
+                            <span class="status draft" style="color: orangered;">{{ journal.status }}</span>
+                            {% elif journal.status == 'published' %}
+                            <span class="status published text-success">{{ journal.status }}</span>
                             {% else %}
-                                <span class="status">{{ journal.status }}</span>
+                            <span class="status">{{ journal.status }}</span>
                             {% endif %}
                         </div>
                     </a>
-                    {% endfor%}
+                    {% endfor %}
                 </div>
             </div>
             <div class="col-md-7">
                 <div class="d-flex justify-content-between align-items-center">
                     <button class="btn btn-success btn-publish">Publish</button>
-                    <a href="#"><button class="btn btn-outline-danger template-button">Template</button></a>
-                    <div class="">
-                        <a href="#" class="text-white" style="margin-right: 10px;"><i class="fa fa-edit"></i></a>
-                        <a href="#" class="text-white" style="margin-right: 10px;"><i class="fa fa-file-pdf"></i></a>
-                        <a href="#" class="text-white" style="margin-right: 10px;"><i class="fa fa-print"></i></a>
-                        <a href="#" class="text-white" style="margin-right: 10px;"><i class="fa fa-paperclip"></i></a>
-                        <a href="#" class="text-white" style="margin-right: 10px;"><i class="fa fa-trash"></i></a>
+                    <button class="btn btn-outline-danger template-button">Template</button>
+                    <div class="">                    
+                        <a href="#" class="text-white" style="margin-right: 10px;"><i
+                                class="fa fa-edit"></i></a>
+                        <a href="#" class="text-white" style="margin-right: 10px;"><i
+                                class="fa fa-file-pdf"></i></a>
+                        <a href="#" class="text-white" style="margin-right: 10px;"><i
+                                class="fa fa-print"></i></a>
+                        <a href="#" class="text-white" style="margin-right: 10px;"><i
+                                class="fa fa-paperclip"></i></a>
+                        <a href="#" class="text-white" style="margin-right: 10px;"><i
+                                class="fa fa-trash"></i></a>
                     </div>
                 </div>
                 <div class="details-section mt-3">
-                  
+
                 </div>
             </div>
         </div>
     </div>
 </section>
 <script>
-    $(document).ready(function() {
-      $('.list-item').click(function() {
-        $('.list-item').removeClass('active');
-        $(this).addClass('active');
-    
-        var journalId = $(this).data('journal-id');
-        var journalDetailsUrl = $(this).data('journal-details-url');
-        $('.details-section').html('<p>Loading journal details...</p>');
-        $.ajax({
-         url: journalDetailsUrl,
-          method: 'GET',
-          data: {
-            journal_id: journalId
-          },
-          success: function(response) {
-            $('.details-section').html(response);
-          },
-          error: function() {
-            $('.details-section').html('<p>Failed to load journal details.</p>');
-          }
-        });
-      });
-      $('.edit-button').click(function() {
-    var journalId = $(this).data('journal-id');
-    var editJournalUrl = "{% url 'edit_journal' journal_id=0 %}".replace('0', journalId);
-    window.location.href = editJournalUrl;
-    });
+    $(document).ready(function () {
+        $('.list-item').click(function () {
+            $('.list-item').removeClass('active');
+            $(this).addClass('active');
 
-      $('.btn-publish').click(function() {
-        var journalId = $('.list-item.active').data('journal-id');
-        var publishUrl = "{% url 'publish_journal' %}";
-        var csrfToken = "{{ csrf_token }}"; 
-        $.ajax({
-          url: publishUrl,
-          method: 'POST',
-          headers: {
-            "X-CSRFToken": csrfToken 
-          },
-          data: {
-            journal_id: journalId,
-          },
-          success: function(response) {
-            $('.details-section .status').text('Published');
-    
-            $('.list-item.active .status').text('Published');
-          },
-          error: function() {
-            console.log('Failed to publish journal.');
-          }
+            var journalId = $(this).data('journal-id');
+            var journalDetailsUrl = $(this).data('journal-details-url');
+            $('.details-section').html('<p>Loading journal details...</p>');
+            $.ajax({
+                url: journalDetailsUrl,
+                method: 'GET',
+                data: {
+                    journal_id: journalId
+                },
+                success: function (response) {
+                    $('.details-section').html(response);
+                    $('.template-button').show();
+                },
+                error: function () {
+                    $('.details-section').html('<p>Failed to load journal details.</p>');
+                }
+            });
         });
-      });
-      $('.template-button').click(function() {
-    var selectedJournalId = $('.list-item.active').data('journal-id');
-    sessionStorage.setItem('selectedJournalId', selectedJournalId);
-    var journalDetailsUrl = "{% url 'journal_details' %}?journal_id=" + selectedJournalId;
-    window.location.href = journalDetailsUrl;
-});
+
+        $('.btn-publish').click(function () {
+            var journalId = $('.list-item.active').data('journal-id');
+            var publishUrl = "{% url 'publish_journal' %}";
+            var csrfToken = "{{ csrf_token }}";
+            $.ajax({
+                url: publishUrl,
+                method: 'POST',
+                headers: {
+                    "X-CSRFToken": csrfToken
+                },
+                data: {
+                    journal_id: journalId,
+                },
+                success: function (response) {
+                    $('.details-section .status').text('Published');
+
+                    $('.list-item.active .status').text('Published');
+                },
+                error: function () {
+                    console.log('Failed to publish journal.');
+                }
+            });
+        });
+        $('.template-button').click(function () {
+            var selectedJournalId = $('.list-item.active').data('journal-id');
+            sessionStorage.setItem('selectedJournalId', selectedJournalId);
+            var journalDetailsUrl = "{% url 'journal_details' %}?journal_id=" + selectedJournalId;
+            window.location.href = journalDetailsUrl;
+        });
+        $('.fa-edit').click(function() {
+            var selectedJournalId = $('.list-item.active').data('journal-id');
+            var editUrl = "{% url 'journal_details' %}?journal_id=" + selectedJournalId;
+            window.location.href = editUrl;
+        });
 
     });
 </script>

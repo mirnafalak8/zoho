@@ -2627,22 +2627,30 @@ def add_journal(request):
     accounts = Account.objects.all()
     vendors = vendor_table.objects.all()
     customers = customer.objects.all()
+
     if request.method == 'POST':
+        user = request.user
         date = request.POST.get('date')
         journal_no = request.POST.get('journal_no')
         reference_no = request.POST.get('reference_no')
         notes = request.POST.get('notes')
         currency = request.POST.get('currency')
         cash_journal = request.POST.get('cash_journal') == 'True'
+
+        attachment = request.FILES.get('attachment')  
+
         journal = Journal(
+            user=user,
             date=date,
             journal_no=journal_no,
             reference_no=reference_no,
             notes=notes,
             currency=currency,
-            cash_journal=cash_journal
+            cash_journal=cash_journal,
+            attachment=attachment  
         )
         journal.save()
+
         account_list = request.POST.getlist('account')
         description_list = request.POST.getlist('description')
         contact_list = request.POST.getlist('contact')
@@ -2696,14 +2704,35 @@ def journal_list(request):
             Q(notes__icontains=query) |
             Q(total_debit__icontains=query)
         )
-
     return render(request, 'journal_list.html', {'journals': journals})
+
+# def journal_details(request):
+#     journal_id = request.GET.get('journal_id')
+#     journal = get_object_or_404(Journal, id=journal_id)
+#     journal_entries = JournalEntry.objects.filter(journal=journal)
+#     return render(request, 'journal_template.html', {'journal': journal,'journal_entries': journal_entries})
 
 def journal_details(request):
     journal_id = request.GET.get('journal_id')
     journal = get_object_or_404(Journal, id=journal_id)
     journal_entries = JournalEntry.objects.filter(journal=journal)
-    return render(request, 'journal_template.html', {'journal': journal,'journal_entries': journal_entries})
+    
+    try:
+        company = company_details.objects.get(user=request.user)
+        company_name = company.company_name
+        address = company.address
+    except company_details.DoesNotExist:
+        company_name = ''
+        address = ''
+    
+    context = {
+        'journal': journal,
+        'journal_entries': journal_entries,
+        'company_name': company_name,
+        'address': address,
+    }
+    
+    return render(request, 'journal_template.html', context)
 
 
 def delete_journal(request, journal_id):
@@ -2812,7 +2841,14 @@ def edit_journal(request, journal_id):
         journal.reference_no = reference_no
         journal.notes = notes
         journal.currency = currency
-        journal.cash_journal = cash_journal
+        journal.cash_journal = cash_journal       
+        journal.user = request.user
+        old=journal.attachment
+        new = request.FILES.get('attachment')
+        if old !=None and new==None:
+            journal.attachment=old
+        else:
+            journal.attachment=new            
         journal.save()
 
         account_list = request.POST.getlist('account')

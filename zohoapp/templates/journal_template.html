@@ -2,131 +2,155 @@
 {% load static %}
 
 {% block content %}
-  <!-- <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"> -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.3/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-  <style>
-    .text-center {
-      margin-bottom: 20px;
-    }
+<!-- <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"> -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.3/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<style>
+  .text-center {
+    margin-bottom: 20px;
+  }
 
-    #container {
-      width: 100%;
-      margin: 0 auto;
-      text-align: center;
-    }
+  #container {
+    width: 100%;
+    margin: 0 auto;
+    text-align: center;
+  }
 
-    .table-responsive {
-      width: 100%;
-      overflow-x: auto;
-    }
+  .table-responsive {
+    width: 100%;
+    overflow-x: auto;
+  }
 
-    table {
-      width: 100%;
-    }
+  table {
+    width: 100%;
+  }
 
-    table td, table th {
-      white-space: nowrap;
-    }
+  table td,
+  table th {
+    white-space: nowrap;
+  }
 
-    .left-align {
-      text-align: left;
-    }
-  </style>
-  <section style="height: 150vh; overflow: auto;">
-    <div class="text-end bg-white p-4">
-      <a href="{% url 'edit_journal' journal.id %}" class="btn btn-primary">Edit</a>
-      <button onclick="convertToPDF()" class="btn btn-success">Convert to PDF</button>
-      <!-- <button onclick="viewPDF()" class="btn btn-info">View PDF</button> -->
-      <a href="{% url 'delete_journal' journal.id %}"><button onclick="confirmDelete()" class="btn btn-danger">Delete</button></a>
+  .left-align {
+    text-align: left;
+  }
+</style>
+<section style="height: 150vh; overflow: auto;">
+  <div class="text-end bg-white p-4">
+    <a href="{% url 'edit_journal' journal.id %}" class="btn btn-primary">
+      <i class="fa fa-pencil"></i>
+    </a>
+    <a onclick="convertToPDF()" class="btn btn-primary">
+      <i class="fa fa-file-pdf-o" style="color: aliceblue;"></i>
+    </a>
+    <!-- <button onclick="viewPDF()" class="btn btn-info">View PDF</button> -->
+    {% if journal.attachment %}
+    <div class="btn-group" role="group">
+      <a href="{{ journal.attachment.url }}" class="btn btn-primary" download data-toggle="tooltip" data-placement="bottom">
+        <i class="fa fa-paperclip" style="color: aliceblue;"></i>
+      </a>
+      <button type="button" class="btn btn-primary" data-toggle="tooltip" data-placement="bottom" title="{{ journal.attachment.name }}" disabled>
+        {{ journal.attachment.name }}
+      </button>
     </div>
-    <div class="container-fluid bg-white text-dark" id="container">
-      <br><br>
-      <div class="row justify-content-center">
-        <div class="col-md-9"> 
-          <h2 class="left-align">ALTOS Technologies</h2>
-          <p class="left-align">Kochi, Kerala</p>
-          <hr>
-          <div class="row">
-            <div class="col-md-6">
-              <p class="text-center">Notes:</p>
-              <p class="text-center">{{ journal.notes }}</p>
-              <p>Reference No: {{ journal.reference_no }}</p>
-            </div>
-            <div class="col-md-6">
-              <p>Journal No: {{ journal.journal_no }}</p>
-              <p>Date: {{ journal.date }}</p> 
-              <p>Amount: <i class="fa fa-inr"></i>{{ journal.total_credit }}</p>
-            </div>
+    {% endif %}
+    <a href="{% url 'delete_journal' journal.id %}" onclick="return confirmDelete()">
+      <button class="btn btn-danger">
+        <i class="fa fa-trash"></i>
+      </button>
+    </a>
+  </div>
+  <div class="container-fluid bg-white text-dark" id="container">
+    <br><br>
+    <div class="row justify-content-center">
+      <div class="col-md-9">
+        <!-- <h2 class="left-align">ALTOS Technologies</h2>
+          <p class="left-align">Kochi, Kerala</p> -->
+        <h2 class="left-align">{{ company_name }}</h2>
+        <p class="left-align">{{ address }}</p>
+        <hr>
+        <div class="row">
+          <div class="col-md-6">
+            <p class="text-center">Notes:</p>
+            <p class="text-center">{{ journal.notes }}</p>
+            <p>Reference No: {{ journal.reference_no }}</p>
           </div>
-          <hr>
-          <div class="table-responsive">
-            <table class="table">
-              <thead>
-                <tr>
-                  <th>Account Name</th>
-                  <th>Description</th>
-                  <th>Contact</th>
-                  <th>Debits</th>
-                  <th>Credits</th>
-                </tr>
-              </thead>
-              <tbody>
-                {% for entry in journal_entries %}
-                <tr>
-                  <td>{{ entry.account }}</td>
-                  <td>{{ entry.description }}</td>
-                  <td>{{ entry.contact }}</td>
-                  <td>{{ entry.debits }}</td>
-                  <td>{{ entry.credits }}</td>
-                </tr>
-                {% endfor %}
-              </tbody>
-            </table>
-          </div>
-          <div class="text-center">
-            <table class="table">
-              <tbody>
-                <tr>
-                  <td>Total Debit:</td>
-                  <td><i class="fa fa-inr"></i>{{ journal.total_debit }}</td>
-                </tr>
-                <tr>
-                  <td>Total Credit:</td>
-                  <td><i class="fa fa-inr"></i>{{ journal.total_credit }}</td>
-                </tr>
-                <tr>
-                  <td>Difference:</td>
-                  <td>{{ journal.difference }}</td>
-                </tr>
-              </tbody>
-            </table>
+          <div class="col-md-6">
+            <p>Journal No: {{ journal.journal_no }}</p>
+            <p>Date: {{ journal.date }}</p>
+            <p>Amount: <i class="fa fa-inr"></i>{{ journal.total_credit }}</p>
           </div>
         </div>
+        <hr>
+        <div class="table-responsive">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Account Name</th>
+                <th>Description</th>
+                <th>Contact</th>
+                <th>Debits</th>
+                <th>Credits</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for entry in journal_entries %}
+              <tr>
+                <td>{{ entry.account }}</td>
+                <td>{{ entry.description }}</td>
+                <td>{{ entry.contact }}</td>
+                <td>{{ entry.debits }}</td>
+                <td>{{ entry.credits }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <div class="text-center">
+          <table class="table">
+            <tbody>
+              <tr>
+                <td>Total Debit:</td>
+                <td><i class="fa fa-inr"></i>{{ journal.total_debit }}</td>
+              </tr>
+              <tr>
+                <td>Total Credit:</td>
+                <td><i class="fa fa-inr"></i>{{ journal.total_credit }}</td>
+              </tr>
+              <tr>
+                <td>Difference:</td>
+                <td>{{ journal.difference }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
-      <br><br>
     </div>
-  </section>
+    <br><br>
+  </div>
+</section>
 
-  <script>
-    function convertToPDF() {
-      const container = document.getElementById('container');
+<script>
+  function convertToPDF() {
+    const container = document.getElementById('container');
 
-      const options = {
-        filename: 'journal.pdf',
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2 },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-      };
+    const options = {
+      filename: 'journal.pdf',
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2 },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
 
-      html2pdf().from(container).set(options).save();
+    html2pdf().from(container).set(options).save();
+  }
+
+  function confirmDelete() {
+    if (confirm("Are you sure you want to delete this journal?")) {
+      alert("Journal deleted successfully!");
     }
-
-    function confirmDelete() {
-      if (confirm("Are you sure you want to delete this journal?")) {
-        alert("Journal deleted successfully!");
-      }
-    }
-  </script>
+  }
+  $(function () {
+    $('[data-toggle="tooltip"]').tooltip();
+  });
+</script>
 {% endblock %}
