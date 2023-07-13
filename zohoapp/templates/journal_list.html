@@ -5,6 +5,8 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.3/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
 
 <style>
     .custom-height {
@@ -107,8 +109,34 @@
             <div class="col-md-7">
                 <div class="d-flex justify-content-between align-items-center">
                     <button class="btn btn-success btn-publish">Publish</button>
-                    <button class="btn btn-outline-danger template-button">Template</button>
-                    <div class="">                    
+                    <button class="btn btn-info comments-button" data-journal-id="{{ journal.id }}" data-toggle="modal" data-target="#commentsModal">Comments</button>
+
+                    <!-- Comments Modal -->
+                    <div class="modal fade" id="commentsModal" tabindex="-1" aria-labelledby="commentsModalLabel" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="commentsModalLabel">Comments</h5>
+                                    <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="comments-view-section">
+                                        <!-- Display existing comments here -->
+                                    </div>
+                                    <form id="commentForm" method="POST">
+                                        {% csrf_token %}
+                                        <div class="form-group">
+                                            <label for="commentInput">Add Comment</label>
+                                            <textarea class="form-control" id="commentInput" name="comment" rows="3"></textarea>
+                                        </div>
+                                        <button type="submit" class="btn btn-primary">Submit</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                                        <button class="btn btn-outline-danger template-button">Template</button>
+                    <!-- <div class="">                    
                         <a href="#" class="text-white" style="margin-right: 10px;"><i
                                 class="fa fa-edit"></i></a>
                         <a href="#" class="text-white" style="margin-right: 10px;"><i
@@ -119,7 +147,7 @@
                                 class="fa fa-paperclip"></i></a>
                         <a href="#" class="text-white" style="margin-right: 10px;"><i
                                 class="fa fa-trash"></i></a>
-                    </div>
+                    </div> -->
                 </div>
                 <div class="details-section mt-3">
 
@@ -182,12 +210,24 @@
             var journalDetailsUrl = "{% url 'journal_details' %}?journal_id=" + selectedJournalId;
             window.location.href = journalDetailsUrl;
         });
-        $('.fa-edit').click(function() {
-            var selectedJournalId = $('.list-item.active').data('journal-id');
-            var editUrl = "{% url 'journal_details' %}?journal_id=" + selectedJournalId;
-            window.location.href = editUrl;
+        $('.comments-button').click(function () {
+        var journalId = $(this).data('journal-id');
+        // Update the form action attribute with the journal ID
+        $('#commentForm').attr('action', '/add_comment/' + journalId + '/');
+        
+        // Retrieve existing comments and update the view section using AJAX
+        var commentsUrl = '/get_comments/' + journalId + '/';
+        $.ajax({
+            url: commentsUrl,
+            method: 'GET',
+            success: function (response) {
+                $('.comments-view-section').html(response);
+            },
+            error: function () {
+                console.log('Failed to retrieve comments.');
+            }
         });
-
+    });
     });
 </script>
 {% endblock %}

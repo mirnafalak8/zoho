@@ -2746,7 +2746,21 @@ def get_journal_details(request):
     journal_id = request.GET.get('journal_id')
     journal = get_object_or_404(Journal, id=journal_id)
     journal_entries = JournalEntry.objects.filter(journal=journal)
-    return render(request, 'journal_details.html', {'journal': journal, 'journal_entries': journal_entries})
+    try:
+        company = company_details.objects.get(user=request.user)
+        company_name = company.company_name
+        address = company.address
+    except company_details.DoesNotExist:
+        company_name = ''
+        address = ''
+    
+    context = {
+        'journal': journal,
+        'journal_entries': journal_entries,
+        'company_name': company_name,
+        'address': address,
+    }
+    return render(request, 'journal_details.html',context)
 
 def publish_journal(request):
     if request.method == 'POST':
@@ -2755,6 +2769,15 @@ def publish_journal(request):
         journal.status = 'published'
         journal.save()
         return JsonResponse({'status': 'success'})
+    else:
+        return JsonResponse({'status': 'error'})
+    
+def add_comment(request, journal_id):
+    if request.method == 'POST':
+        journal = get_object_or_404(Journal, id=journal_id)
+        comment_text = request.POST.get('comment')
+        comment = JournalComment.objects.create(journal=journal, user=request.user, text=comment_text)
+        return JsonResponse({'status': 'success', 'comment_id': comment.id})
     else:
         return JsonResponse({'status': 'error'})
     
