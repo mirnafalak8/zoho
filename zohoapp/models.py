@@ -437,9 +437,10 @@ class JournalEntry(models.Model):
     credits = models.DecimalField(max_digits=10, decimal_places=2)
 
 class JournalComment(models.Model):
-    journal = models.ForeignKey(Journal, on_delete=models.CASCADE)
+    journal = models.ForeignKey(Journal, related_name='comments', on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     text = models.TextField()
     date_time = models.DateTimeField(auto_now_add=True)
 
-    
+def __str__(self):
+        return f"Comment by {self.user.username} on Journal {self.journal.journal_no}"    

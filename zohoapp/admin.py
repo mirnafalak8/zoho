@@ -23,5 +23,4 @@ admin.site.register(JournalEntry)
 class JournalCommentAdmin(admin.ModelAdmin):
     list_display = ('user', 'journal', 'date_time', 'text')
 
-    def __str__(self):
-        return f'Comment by {self.user.username} on Journal {self.journal.journal_no}'
+    

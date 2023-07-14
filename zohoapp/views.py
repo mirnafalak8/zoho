@@ -15,6 +15,7 @@ from django.views import View
 from .forms import EmailForm
 from django.http import JsonResponse
 import json
+from django.views.decorators.csrf import csrf_exempt
 
 
 # Create your views here.
@@ -2706,12 +2707,6 @@ def journal_list(request):
         )
     return render(request, 'journal_list.html', {'journals': journals})
 
-# def journal_details(request):
-#     journal_id = request.GET.get('journal_id')
-#     journal = get_object_or_404(Journal, id=journal_id)
-#     journal_entries = JournalEntry.objects.filter(journal=journal)
-#     return render(request, 'journal_template.html', {'journal': journal,'journal_entries': journal_entries})
-
 def journal_details(request):
     journal_id = request.GET.get('journal_id')
     journal = get_object_or_404(Journal, id=journal_id)
@@ -2772,14 +2767,52 @@ def publish_journal(request):
     else:
         return JsonResponse({'status': 'error'})
     
-def add_comment(request, journal_id):
-    if request.method == 'POST':
-        journal = get_object_or_404(Journal, id=journal_id)
+@csrf_exempt
+def journal_comments(request):
+    if request.method == 'GET':
+        journal_id = request.GET.get('journal_id')
+        comments = JournalComment.objects.filter(journal_id=journal_id).order_by('-date_time')
+        comment_list = []
+        for comment in comments:
+            comment_data = {
+                'text': comment.text,
+                'date_time': comment.date_time.strftime('%Y-%m-%d %H:%M:%S')
+            }
+            comment_list.append(comment_data)
+        return JsonResponse({'comments': comment_list})
+
+    elif request.method == 'POST':
+        journal_id = request.POST.get('journal_id')
         comment_text = request.POST.get('comment')
-        comment = JournalComment.objects.create(journal=journal, user=request.user, text=comment_text)
-        return JsonResponse({'status': 'success', 'comment_id': comment.id})
-    else:
-        return JsonResponse({'status': 'error'})
+
+        journal = Journal.objects.get(id=journal_id)
+        user = request.user
+
+        comment = JournalComment(journal=journal, user=user, text=comment_text)
+        comment.save()
+
+        comment_data = {
+            'text': comment.text,
+            'date_time': comment.date_time.strftime('%Y-%m-%d %H:%M:%S')
+        }
+
+        return JsonResponse({'comment': comment_data})
+    
+# def add_comment(request, journal_id):
+#     if request.method == 'POST':
+#         comment_text = request.POST.get('comment')
+#         journal = get_object_or_404(Journal, id=journal_id)
+#         comment = JournalComment(journal=journal, text=comment_text)
+#         comment.save()
+#         return JsonResponse({'status': 'success', 'date_time': comment.date_time})
+#     else:
+#         return JsonResponse({'status': 'error'})
+    
+# def get_comments(request, journal_id):
+#     journal = get_object_or_404(Journal, id=journal_id)
+#     comments = journal.comments.filter(active=True) 
+#     return render(request, 'journal_comments.html', {'comments': comments})
+
     
 def draft_journal_list(request):
     query = request.GET.get('query')
