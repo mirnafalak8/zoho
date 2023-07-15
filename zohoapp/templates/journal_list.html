@@ -34,6 +34,7 @@
         border: 1px solid #ddd;
         border-radius: 5px;
         padding: 5px;
+        text-decoration: none;
     }
 
     .custom-item:hover {
@@ -72,7 +73,13 @@
         align-items: baseline;
         margin-bottom: 10px;
     }
+
+    .dropdown-menu a.dropdown-item.custom-item:hover,
+    .dropdown-menu a.dropdown-item.custom-item:focus {
+        color: black !important;
+    }
 </style>
+
 
 <section>
     <div class="row" style="top: 7rem;">
@@ -97,13 +104,13 @@
                         <a href="{% url 'add_journal' %}" class="btn btn-primary">+ New Journal</a>
                         <div class="dropdown">
                             <button class="btn btn-primary dropdown-toggle" type="button" id="filterDropdown"
-                                data-bs-toggle="dropdown" aria-expanded="false"></button>
-                            <ul class="dropdown-menu" aria-labelledby="filterDropdown">
-                                <li><a class="dropdown-item custom-item" href="#">All</a></li>
-                                <li><a class="dropdown-item custom-item" href="{% url 'draft_journal' %}">Draft</a>
-                                </li>
-                                <li><a class="dropdown-item custom-item"
-                                        href="{% url 'published_journal' %}">Published</a></li>
+                                data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fa fa-filter"></i>
+                            </button>
+                            <ul class="dropdown-menu bg-dark" aria-labelledby="filterDropdown">
+                                <li><a class="dropdown-item custom-item text-light" href="{% url 'journal_list' %}">All</a></li>
+                                <li><a class="dropdown-item custom-item text-light" href="{% url 'journal_list' %}?filter=draft">Draft</a></li>
+                                <li><a class="dropdown-item custom-item text-light" href="{% url 'journal_list' %}?filter=published">Published</a></li>
                             </ul>
                         </div>
                     </div>

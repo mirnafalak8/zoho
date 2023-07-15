@@ -8,42 +8,50 @@
 </head>
 <style>
   .journal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
 
-.journal-title {
-  margin: 0;
-}
+  .journal-title {
+    margin: 0;
+  }
 
-.journal-actions {
-  display: flex;
-  align-items: center;
-}
+  .journal-actions {
+    display: flex;
+    align-items: center;
+  }
 </style>
+
 <body>
   <div class="journal-header">
     <h4 class="journal-title">Journal Details:</h4>
     <div class="journal-actions">
-      <a href="{% url 'edit_journal' journal.id %}" class="text-white" style="margin-right: 10px;"><i class="fa fa-edit"></i></a>
+      <a href="{% url 'edit_journal' journal.id %}" class="text-white" style="margin-right: 10px;"><i
+          class="fa fa-edit"></i></a>
       <a onclick="convertToPDF()" class="text-white">
         <i class="fa fa-file-pdf-o" style="margin-right: 10px;"></i>
+      </a>
+      <a onclick="printJournal()" class="text-white">
+        <i class="fa fa-print" style="margin-right: 10px;"></i>
       </a>
       <!-- <a href="#" class="text-white" style="margin-right: 10px;"><i class="fa fa-print"></i></a> -->
       {% if journal.attachment %}
       <div class="btn-group" role="group">
-        <a href="{{ journal.attachment.url }}" class="btn btn-dark" download data-toggle="tooltip" data-placement="bottom">
+        <a href="{{ journal.attachment.url }}" class="btn btn-dark" download data-toggle="tooltip"
+          data-placement="bottom">
           <i class="fa fa-paperclip" style="color: aliceblue;"></i>
         </a>
-        <button type="button" class="btn btn-dark" data-toggle="tooltip" style="margin-right: 10px;" data-placement="bottom" disabled>
+        <button type="button" class="btn btn-dark" data-toggle="tooltip" style="margin-right: 10px;"
+          data-placement="bottom" disabled>
           {{ journal.attachment.name }}
         </button>
       </div>
       {% endif %}
       <!-- <a href="#" class="text-white" style="margin-right: 10px;"><i
               class="fa fa-paperclip"></i></a> -->
-      <a href="{% url 'delete_journal' journal.id %}" onclick="return confirmDelete()" class="text-white" style="margin-right: 10px;"><i class="fa fa-trash"></i></a>
+      <a href="{% url 'delete_journal' journal.id %}" onclick="return confirmDelete()" class="text-white"
+        style="margin-right: 10px;"><i class="fa fa-trash"></i></a>
     </div>
   </div>
   <p>Date: {{ journal.date }}</p>
@@ -73,18 +81,18 @@
         <h2 class="left-align">{{ company_name }}</h2>
         <p class="left-align">{{ address }}</p>
         <hr>
-        <div class="row">
-          <div class="col-md-6">
-            <p class="text-center">Notes:</p>
-            <p class="text-center">{{ journal.notes }}</p>
+        <div class="text-center">
+          <div class="left-section">
+            <p>Notes:</p>
+            <p>{{ journal.notes }}</p>
             <p>Reference No: {{ journal.reference_no }}</p>
           </div>
-          <div class="col-md-6">
+          <div class="right-section">
             <p>Journal No: {{ journal.journal_no }}</p>
             <p>Date: {{ journal.date }}</p>
             <p>Amount: <i class="fa fa-inr"></i>{{ journal.total_credit }}</p>
           </div>
-        </div>
+        </div>        
         <hr>
         <div class="table-responsive">
           <table class="table">
@@ -129,7 +137,8 @@
           </table>
         </div>
       </div>
-    </div>    </div>
+    </div>
+        </div>
   `;
 
       const options = {
@@ -151,6 +160,154 @@
     $(function () {
       $('[data-toggle="tooltip"]').tooltip();
     });
+    function printJournal() {
+    const containerContent = `
+    <style>
+  .text-center {
+    margin-bottom: 20px;
+  }
+
+  #container {
+    width: 100%;
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  .table-responsive {
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  table {
+    width: 100%;
+  }
+
+  table td,
+  table th {
+    white-space: nowrap;
+  }
+
+  .left-align {
+    text-align: left;
+  }
+  .text-center {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .left-section {
+    text-align: left;
+  }
+
+  .right-section {
+    text-align: right;
+  }
+
+  .table-striped tbody tr:nth-child(odd) {
+    background-color: #f2f2f2;
+  }
+  table {
+          width: 100%;
+          border-collapse: collapse;
+        }
+        th, td {
+          border: 1px solid #000;
+          padding: 8px;
+        }
+        th {
+          background-color: #f2f2f2;
+        }
+</style>
+<div class="container-fluid bg-white text-dark" id="container">
+  <br><br>
+  <div class="row justify-content-center">
+    <div class="col-md-9">
+      <h2 class="left-align">{{ company_name }}</h2>
+      <p class="left-align">{{ address }}</p>
+      <hr>
+      <div class="text-center">
+        <div class="left-section">
+          <p>Notes:</p>
+          <p>{{ journal.notes }}</p>
+          <p>Reference No: {{ journal.reference_no }}</p>
+        </div>
+        <div class="right-section">
+          <p>Journal No: {{ journal.journal_no }}</p>
+          <p>Date: {{ journal.date }}</p>
+          <p>Amount: <i class="fa fa-inr"></i>{{ journal.total_credit }}</p>
+        </div>
+      </div>
+      <hr>
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th>Account Name</th>
+              <th>Description</th>
+              <th>Contact</th>
+              <th>Debits</th>
+              <th>Credits</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for entry in journal_entries %}
+            <tr>
+              <td>{{ entry.account }}</td>
+              <td>{{ entry.description }}</td>
+              <td>{{ entry.contact }}</td>
+              <td>{{ entry.debits }}</td>
+              <td>{{ entry.credits }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <div class="text-center">
+        <table class="table">
+          <tbody>
+            <tr>
+              <td>Total Debit:</td>
+              <td><i class="fa fa-inr"></i>{{ journal.total_debit }}</td>
+            </tr>
+            <tr>
+              <td>Total Credit:</td>
+              <td><i class="fa fa-inr"></i>{{ journal.total_credit }}</td>
+            </tr>
+            <tr>
+              <td>Difference:</td>
+              <td>{{ journal.difference }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+    `;
+
+    const printWindow = window.open('', '_blank');
+    printWindow.document.open();
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Journal Print</title>
+        </head>
+        <body>
+          ${containerContent}
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+    printWindow.onload = function () {
+      printWindow.print();
+      printWindow.onafterprint = function () {
+        printWindow.close();
+      };
+    };
+  }
   </script>
 </body>
 

@@ -85,12 +85,17 @@
                             <tr>
                                 <td>{{ forloop.counter }}</td>
                                 <td>
+                                    <div class="input-group">
                                     <select name="account" class="form-control">
                                         <option value="">Select Account</option>
                                         {% for account in accounts %}
                                         <option value="{{ account.accountName }}" {% if journal_entry.account == account.accountName %}selected{% endif %}>{{ account.accountName }}</option>
                                         {% endfor %}
                                     </select>
+                                    <div class="input-group-append">
+                                        <button type="button" class="form-control btn btn-primary" onclick="addAccount()">+</button>
+                                    </div>
+                                </div>
                                 </td>
                                 <td><input type="text" name="description" class="form-control" value="{{ journal_entry.description }}"></td>
                                 <td>
@@ -144,15 +149,10 @@
                             </table>
                         </div>
                     </div>
-                    <div class="row justify-content-center mt-4">
-                        <div class="col-md-4">
-                            <button type="button" class="btn btn-outline-secondary" onClick="javascript:history.go(-1);">Back</button>
-                        </div>
-                        <div class="col-md-4 text-center">
-                            <button type="submit" class="btn btn-secondary w-50">Save</button>
-                        </div>
-                        <div class="col-md-4 text-end">
-                            <button type="button" class="btn btn-outline-secondary" onclick="clearForm()">Clear</button>
+                    <div class="row justify-content-left mt-4">
+                        <div class="col-md-4 text-start"> 
+                            <button type="submit" class="btn btn-secondary">Save</button>
+                            <button type="button" class="btn btn-outline-secondary ms-2" onclick="clearForm()">Clear</button> <!-- Added class: ms-2 -->
                         </div>
                     </div>
                 </form>
@@ -175,7 +175,19 @@
         var actionCell = row.insertCell(6);
 
         numberCell.innerHTML = rowCount;
-        accountCell.innerHTML = '<select name="account" class="form-control"><option value="">Select Account</option>{% for account in accounts %}<option value="{{ account.accountName }}">{{ account.accountName }}</option>{% endfor %}</select>';
+        accountCell.innerHTML = `
+    <div class="input-group">
+        <select name="account" class="form-control">
+            <option value="">Select Account</option>
+            {% for account in accounts %}
+            <option value="{{ account.accountName }}">{{ account.accountName }}</option>
+            {% endfor %}
+        </select>
+        <div class="input-group-append">
+            <button type="button" class="form-control btn btn-primary" onclick="addAccount()">+</button>
+        </div>
+    </div>
+`;
         descriptionCell.innerHTML = '<input type="text" name="description" class="form-control">';
         var options = '';
         options += '<option value="">Select Contact</option>';

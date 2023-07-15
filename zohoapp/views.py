@@ -2608,9 +2608,12 @@ def edit_sales_order(request,id):
 
 def manual_journal_home(request):
     query = request.GET.get('query')
+    filter_type = request.GET.get('filter')
+
+    journals = Journal.objects.all()
 
     if query:
-        journals = Journal.objects.filter(
+        journals = journals.filter(
             Q(date__icontains=query) |
             Q(journal_no__icontains=query) |
             Q(reference_no__icontains=query) |
@@ -2618,10 +2621,17 @@ def manual_journal_home(request):
             Q(notes__icontains=query) |
             Q(total_debit__icontains=query)
         )
-    else:
-        journals = Journal.objects.all()
 
-    context = {'journal': journals, 'query': query}
+    if filter_type == 'draft':
+        journals = journals.filter(status='draft')
+    elif filter_type == 'published':
+        journals = journals.filter(status='published')
+
+    context = {
+        'journal': journals,
+        'query': query,
+        'filter_type': filter_type
+    }
     return render(request, 'manual_journal.html', context)
 
 def add_journal(request):
@@ -2694,6 +2704,8 @@ def add_journal(request):
 
 def journal_list(request):
     query = request.GET.get('query')
+    filter_param = request.GET.get('filter')
+
     journals = Journal.objects.all()
 
     if query:
@@ -2705,6 +2717,13 @@ def journal_list(request):
             Q(notes__icontains=query) |
             Q(total_debit__icontains=query)
         )
+
+    if filter_param:
+        if filter_param == 'draft':
+            journals = journals.filter(status='draft')
+        elif filter_param == 'published':
+            journals = journals.filter(status='published')
+
     return render(request, 'journal_list.html', {'journals': journals})
 
 def journal_details(request):
@@ -2812,72 +2831,7 @@ def journal_comments(request):
 #     journal = get_object_or_404(Journal, id=journal_id)
 #     comments = journal.comments.filter(active=True) 
 #     return render(request, 'journal_comments.html', {'comments': comments})
-
     
-def draft_journal_list(request):
-    query = request.GET.get('query')
-    journals = Journal.objects.filter(status='draft')
-
-    if query:
-        journals = journals.filter(
-            Q(date__icontains=query) |
-            Q(journal_no__icontains=query) |
-            Q(reference_no__icontains=query) |
-            Q(status__icontains=query) |
-            Q(notes__icontains=query) |
-            Q(total_debit__icontains=query)
-        )
-
-    return render(request, 'draft_journal_list.html', {'journals': journals})
-
-def published_journal_list(request):
-    query = request.GET.get('query')
-    journals = Journal.objects.filter(status='published')
-
-    if query:
-        journals = journals.filter(
-            Q(date__icontains=query) |
-            Q(journal_no__icontains=query) |
-            Q(reference_no__icontains=query) |
-            Q(status__icontains=query) |
-            Q(notes__icontains=query) |
-            Q(total_debit__icontains=query)
-        )
-
-    return render(request, 'published_journal_list.html', {'journals': journals})
-
-def draft_journal(request):
-    query = request.GET.get('query')
-    journals = Journal.objects.filter(status='draft')
-
-    if query:
-        journals = journals.filter(
-            Q(date__icontains=query) |
-            Q(journal_no__icontains=query) |
-            Q(reference_no__icontains=query) |
-            Q(status__icontains=query) |
-            Q(notes__icontains=query) |
-            Q(total_debit__icontains=query)
-        )
-
-    return render(request, 'draft_journal.html', {'journals': journals})
-
-def published_journal(request):
-    query = request.GET.get('query')
-    journals = Journal.objects.filter(status='published')
-
-    if query:
-        journals = journals.filter(
-            Q(date__icontains=query) |
-            Q(journal_no__icontains=query) |
-            Q(reference_no__icontains=query) |
-            Q(status__icontains=query) |
-            Q(notes__icontains=query) |
-            Q(total_debit__icontains=query)
-        )
-
-    return render(request, 'published_journal.html', {'journals': journals})
-
 def edit_journal(request, journal_id):
     journal = get_object_or_404(Journal, id=journal_id)
     accounts = Account.objects.all()

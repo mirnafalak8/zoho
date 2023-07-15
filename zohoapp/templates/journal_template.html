@@ -34,6 +34,19 @@
   .left-align {
     text-align: left;
   }
+  .text-center {
+  display: flex;
+  justify-content: space-between;
+}
+
+.left-section {
+  text-align: left;
+}
+
+.right-section {
+  text-align: right;
+}
+
 </style>
 <section style="height: 150vh; overflow: auto;">
   <div class="text-end bg-white p-4">
@@ -42,6 +55,9 @@
     </a>
     <a onclick="convertToPDF()" class="btn btn-primary">
       <i class="fa fa-file-pdf-o" style="color: aliceblue;"></i>
+    </a>
+    <a onclick="printJournal()" class="btn btn-primary">
+      <i class="fa fa-print"></i>
     </a>
     <!-- <button onclick="viewPDF()" class="btn btn-info">View PDF</button> -->
     {% if journal.attachment %}
@@ -64,23 +80,21 @@
     <br><br>
     <div class="row justify-content-center">
       <div class="col-md-9">
-        <!-- <h2 class="left-align">ALTOS Technologies</h2>
-          <p class="left-align">Kochi, Kerala</p> -->
         <h2 class="left-align">{{ company_name }}</h2>
         <p class="left-align">{{ address }}</p>
         <hr>
-        <div class="row">
-          <div class="col-md-6">
-            <p class="text-center">Notes:</p>
-            <p class="text-center">{{ journal.notes }}</p>
+        <div class="text-center">
+          <div class="left-section">
+            <p>Notes:</p>
+            <p>{{ journal.notes }}</p>
             <p>Reference No: {{ journal.reference_no }}</p>
           </div>
-          <div class="col-md-6">
+          <div class="right-section">
             <p>Journal No: {{ journal.journal_no }}</p>
             <p>Date: {{ journal.date }}</p>
             <p>Amount: <i class="fa fa-inr"></i>{{ journal.total_credit }}</p>
           </div>
-        </div>
+        </div>        
         <hr>
         <div class="table-responsive">
           <table class="table">
@@ -152,5 +166,15 @@
   $(function () {
     $('[data-toggle="tooltip"]').tooltip();
   });
+  function printJournal() {
+  var printContents = document.getElementById('container').innerHTML;
+  var originalContents = document.body.innerHTML;
+
+  document.body.innerHTML = printContents;
+  window.print();
+
+  document.body.innerHTML = originalContents;
+}
+
 </script>
 {% endblock %}
