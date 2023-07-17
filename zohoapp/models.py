@@ -406,6 +406,22 @@ class sales_item(models.Model):
     rate=models.TextField(max_length=255,null=True,blank=True)
     sale=models.ForeignKey(SalesOrder,on_delete=models.CASCADE,null=True,blank=True)
 
+class Chart_of_Account(models.Model):
+    user = models.ForeignKey(User,on_delete=models.CASCADE,null=True,blank=True)
+    account_type = models.CharField(max_length=255,null=True,blank=True)
+    account_name = models.CharField(max_length=255,null=True,blank=True)
+    credit_no = models.CharField(max_length=255,null=True,blank=True)
+    sub_account = models.CharField(max_length=255,null=True,blank=True)
+    parent_account = models.CharField(max_length=255,null=True,blank=True)
+    bank_account_no = models.CharField(max_length=255,null=True,blank=True)
+    currency = models.CharField(max_length=255,null=True,blank=True)
+    account_code = models.CharField(max_length=255,null=True,blank=True)
+    description = models.TextField(null=True,blank=True)
+    watchlist = models.CharField(max_length=255,null=True,blank=True)
+    attachment=models.ImageField(upload_to="image/", null=True) 
+    create_status=models.CharField(max_length=255,null=True,blank=True) 
+    status = models.CharField(max_length=255,null=True,blank=True)
+
 class Journal(models.Model):
     STATUS_CHOICES = (
         ('draft', 'Draft'),

@@ -120,6 +120,7 @@ urlpatterns = [
     
     path('manual_journal_home/',views.manual_journal_home, name='manual_journal_home'),
     path('add_journal/',views.add_journal, name='add_journal'),
+    path('add_account/',views.add_account, name='add_account'),
     path('journal_list/',views.journal_list, name='journal_list'),
     path('get_journal_details/', views.get_journal_details, name='get_journal_details'),
     # path('journal_template/', views.journal_template, name='journal_template'),

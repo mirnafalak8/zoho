@@ -78,6 +78,14 @@
     .dropdown-menu a.dropdown-item.custom-item:focus {
         color: black !important;
     }
+
+    body.modal-open {
+        overflow: hidden;
+    }
+
+    .modal-backdrop {
+        opacity: 0 !important;
+    }
 </style>
 
 
@@ -86,10 +94,7 @@
         <div class="col-md-5">
             <div class="search-bar">
                 <form action="{% url 'journal_list' %}" method="GET" class="input-group">
-                    <input type="text" name="query" placeholder="Search" class="form-control custom-height">
-                    <div class="input-group-append">
-                        <button type="submit" class="btn btn-outline-secondary custom-height">Search</button>
-                    </div>
+                    <input type="text" name="query" placeholder="Search..." class="form-control custom-height">
                 </form>
             </div>
         </div>
@@ -100,11 +105,9 @@
             <div class="col-md-5 vertical-separator">
                 <div class="d-flex justify-content-between align-items-center">
                     <h3 class="mb text-white">Manual Journal</h3>
-                    <div class="btn-group" role="group">
-                        <a href="{% url 'add_journal' %}" class="btn btn-primary">+ New Journal</a>
+                        <a href="{% url 'add_journal' %}" class="btn btn-dark border-primary custom-height btn-center" style="width: 90px;color: #F86F03;">+ NEW</a>
                         <div class="dropdown">
-                            <button class="btn btn-primary dropdown-toggle" type="button" id="filterDropdown"
-                                data-bs-toggle="dropdown" aria-expanded="false">
+                            <button class="btn btn-dark border-primary custom-height" style="width: 90px;color: #F86F03;" type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                                 <i class="fa fa-filter"></i>
                             </button>
                             <ul class="dropdown-menu bg-dark" aria-labelledby="filterDropdown">
@@ -113,7 +116,6 @@
                                 <li><a class="dropdown-item custom-item text-light" href="{% url 'journal_list' %}?filter=published">Published</a></li>
                             </ul>
                         </div>
-                    </div>
                 </div>
 
                 <div class="list-group mt-3">
@@ -126,7 +128,6 @@
                         </div>
                         <div class="d-flex justify-content-between text-white mt-2">
                             <span>{{ journal.journal_no }}</span>
-                            <!-- <span>{{ journal.status }}</span> -->
                             {% if journal.status == 'draft' %}
                             <span class="status draft" style="color: orangered;">{{ journal.status }}</span>
                             {% elif journal.status == 'published' %}
@@ -148,18 +149,16 @@
                         Comments
                     </button>
 
-                    <!-- The Modal -->
-                    <div class="modal" id="myModal">
-                        <div class="modal-dialog">
+                    <div class="modal" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+                        aria-hidden="true">
+                        <div class="modal-dialog" role="document">
                             <div class="modal-content">
-
-                                <!-- Modal Header -->
                                 <div class="modal-header">
-                                    <h4 class="modal-title">Add Comment</h4>
-                                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                    <h4 class="modal-title" id="myModalLabel">Add Comment</h4>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
                                 </div>
-
-                                <!-- Modal body -->
                                 <div class="modal-body">
                                     <form id="commentForm">
                                         <div class="form-group">
@@ -168,17 +167,12 @@
                                             <textarea class="form-control text-dark" id="commentInput" name="comment"
                                                 rows="3"></textarea>
                                         </div>
-                                        <!-- <button type="submit" class="btn btn-primary">Submit</button> -->
-
+                                    
                                 </div>
-
-                                <!-- Modal footer -->
                                 <div class="modal-footer">
-                                    <button type="submit" class="btn btn-primary">Submit</button>
-                                    </form>
-                                    <!-- <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button> -->
+                                    <button type="submit" class="btn btn-primary" id="submitCommentBtn">Submit</button>
                                 </div>
-
+                            </form>
                             </div>
                         </div>
                     </div>
@@ -203,16 +197,16 @@
         </div>
     </div>
 </section>
+
 <script>
-    $(document).ready(function () {
+    $(document).ready(function() {
         $('.btn-info').prop('disabled', true);
 
-        $('.list-item').click(function () {
+        $('.list-item').click(function() {
             $('.list-item').removeClass('active');
             $(this).addClass('active');
 
             $('.btn-info').prop('disabled', false);
-
 
             var journalId = $(this).data('journal-id');
             var journalDetailsUrl = $(this).data('journal-details-url');
@@ -223,18 +217,18 @@
                 data: {
                     journal_id: journalId
                 },
-                success: function (response) {
+                success: function(response) {
                     $('.details-section').html(response);
                     loadJournalComments(journalId);
                     $('.template-button').show();
                 },
-                error: function () {
+                error: function() {
                     $('.details-section').html('<p>Failed to load journal details.</p>');
                 }
             });
         });
 
-        $('.btn-publish').click(function () {
+        $('.btn-publish').click(function() {
             var journalId = $('.list-item.active').data('journal-id');
             var publishUrl = "{% url 'publish_journal' %}";
             var csrfToken = "{{ csrf_token }}";
@@ -247,22 +241,24 @@
                 data: {
                     journal_id: journalId,
                 },
-                success: function (response) {
+                success: function(response) {
                     $('.details-section .status').text('Published');
 
                     $('.list-item.active .status').text('Published');
                 },
-                error: function () {
+                error: function() {
                     console.log('Failed to publish journal.');
                 }
             });
         });
-        $('.template-button').click(function () {
+
+        $('.template-button').click(function() {
             var selectedJournalId = $('.list-item.active').data('journal-id');
             sessionStorage.setItem('selectedJournalId', selectedJournalId);
             var journalDetailsUrl = "{% url 'journal_details' %}?journal_id=" + selectedJournalId;
             window.location.href = journalDetailsUrl;
         });
+
         function loadJournalComments(journalId) {
             var commentsUrl = "{% url 'journal_comments' %}";
 
@@ -272,7 +268,7 @@
                 data: {
                     journal_id: journalId
                 },
-                success: function (response) {
+                success: function(response) {
                     var comments = response.comments;
                     var commentsContainer = $('#commentsContainer');
                     commentsContainer.empty();
@@ -283,13 +279,13 @@
                         commentsContainer.append(commentHTML);
                     }
                 },
-                error: function () {
+                error: function() {
                     console.log('Failed to load journal comments.');
                 }
             });
         }
 
-        $('#commentForm').submit(function (event) {
+        $('#commentForm').submit(function(event) {
             event.preventDefault();
 
             var comment = $('#commentInput').val();
@@ -298,6 +294,7 @@
 
             $('#commentInput').val('');
         });
+
         function saveJournalComment(comment) {
             var journalId = $('.list-item.active').data('journal-id');
             var commentsUrl = "{% url 'journal_comments' %}";
@@ -310,7 +307,7 @@
                     comment: comment,
                     csrfmiddlewaretoken: '{{ csrf_token }}'
                 },
-                success: function (response) {
+                success: function(response) {
                     var comment = response.comment;
                     var commentHTML = '<div class="comment">' +
                         '<div class="comment-text">' + comment.text + '</div>' +
@@ -318,19 +315,35 @@
                         '</div>';
                     $('#commentsContainer').prepend(commentHTML);
                 },
-                error: function () {
+                error: function() {
                     console.log('Failed to save journal comment.');
                 }
             });
         }
-        $('.btn-info').click(function() {
-        if ($('.list-item.active').length > 0) {
-            $('#myModal').modal('show');
+
+        $('#myModal').on('hidden.bs.modal', function() {
+            var journalId = $('.list-item.active').data('journal-id');
+            loadJournalDetails(journalId);
+        });
+
+        function loadJournalDetails(journalId) {
+            var journalDetailsUrl = $('.list-item.active').data('journal-details-url');
+            $('.details-section').html('<p>Loading journal details...</p>');
+            $.ajax({
+                url: journalDetailsUrl,
+                method: 'GET',
+                data: {
+                    journal_id: journalId
+                },
+                success: function(response) {
+                    $('.details-section').html(response);
+                    loadJournalComments(journalId);
+                },
+                error: function() {
+                    $('.details-section').html('<p>Failed to load journal details.</p>');
+                }
+            });
         }
-        
-    });
-
-
     });
 </script>
 {% endblock %}

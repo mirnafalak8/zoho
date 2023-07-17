@@ -2702,6 +2702,20 @@ def add_journal(request):
 
     return render(request, 'add_journal.html', {'accounts': accounts, 'vendors': vendors, 'customers': customers})
 
+def add_account(request):
+    if request.method == 'POST' and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        account_type = request.POST.get('accountType')
+        account_name = request.POST.get('accountName')
+        account_code = request.POST.get('accountCode')
+        description = request.POST.get('description')
+
+        account = Account(accountType=account_type, accountName=account_name, accountCode=account_code, description=description)
+        account.save()
+
+        return JsonResponse({'success': True, 'message': 'Account created successfully.', 'accountName': account.accountName})
+
+    return JsonResponse({'success': False, 'message': 'Invalid request.'})
+
 def journal_list(request):
     query = request.GET.get('query')
     filter_param = request.GET.get('filter')
