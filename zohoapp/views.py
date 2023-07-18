@@ -2442,8 +2442,6 @@ def payment_term_for_sorder(request):
         
 
 
-
-
     
 @login_required(login_url='login')
 def add_sales_order(request):
@@ -2800,36 +2798,38 @@ def publish_journal(request):
     else:
         return JsonResponse({'status': 'error'})
     
-@csrf_exempt
 def journal_comments(request):
     if request.method == 'GET':
         journal_id = request.GET.get('journal_id')
-        comments = JournalComment.objects.filter(journal_id=journal_id).order_by('-date_time')
-        comment_list = []
+        journal = get_object_or_404(Journal, id=journal_id)
+        comments = journal.comments.all()  # Use the related_name 'comments' to access comments
+        comments_data = []
         for comment in comments:
             comment_data = {
+                'id': comment.id,
                 'text': comment.text,
-                'date_time': comment.date_time.strftime('%Y-%m-%d %H:%M:%S')
+                'date_time': comment.date_time.strftime('%Y-%m-%d %H:%M:%S'),
             }
-            comment_list.append(comment_data)
-        return JsonResponse({'comments': comment_list})
+            comments_data.append(comment_data)
+        return JsonResponse({'comments': comments_data})
+    else:
+        return JsonResponse({'error': 'Invalid request method'})
 
-    elif request.method == 'POST':
-        journal_id = request.POST.get('journal_id')
-        comment_text = request.POST.get('comment')
-
-        journal = Journal.objects.get(id=journal_id)
+@csrf_exempt
+def add_comment(request, journal_id):
+    if request.method == 'POST':
+        journal = get_object_or_404(Journal, id=journal_id)
+        comment_text = request.POST.get('comment', '')
         user = request.user
-
-        comment = JournalComment(journal=journal, user=user, text=comment_text)
-        comment.save()
-
-        comment_data = {
+        comment = JournalComment.objects.create(journal=journal, user=user, text=comment_text)
+        new_comment = {
+            'id': comment.id,
             'text': comment.text,
-            'date_time': comment.date_time.strftime('%Y-%m-%d %H:%M:%S')
+            'date_time': comment.date_time.strftime('%Y-%m-%d %H:%M:%S'),
         }
-
-        return JsonResponse({'comment': comment_data})
+        return JsonResponse({'comment': new_comment})
+    else:
+        return JsonResponse({'error': 'Invalid request method'})
     
 # def add_comment(request, journal_id):
 #     if request.method == 'POST':

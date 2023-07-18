@@ -10,340 +10,340 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.3/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
 
 <style>
-    .custom-height {
-        height: 40px;
-    }
+  .custom-height {
+    height: 40px;
+  }
 
-    .list-item {
-        cursor: pointer;
-    }
+  .list-item {
+    cursor: pointer;
+  }
 
-    .vertical-separator {
-        border-right: 1px solid #ddd;
-    }
+  .vertical-separator {
+    border-right: 1px solid #ddd;
+  }
 
-    .list-item:hover {
-        border: 1px solid #ddd;
-        border-radius: 5px;
-        padding: 5px;
-    }
+  .list-item:hover {
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 5px;
+  }
 
-    .list-item:hover {
-        border: 1px solid #ddd;
-        border-radius: 5px;
-        padding: 5px;
-        text-decoration: none;
-    }
+  .list-item:hover {
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 5px;
+    text-decoration: none;
+  }
 
-    .custom-item:hover {
-        color: white;
-    }
+  .custom-item:hover {
+    color: white;
+  }
 
-    .btn-group {
-        display: inline-flex;
-    }
+  .btn-group {
+    display: inline-flex;
+  }
 
-    .btn-group>* {
-        margin-right: -2px;
-    }
+  .btn-group>* {
+    margin-right: -2px;
+  }
 
-    .template-button {
-        display: none;
-    }
+  .template-button {
+    display: none;
+  }
 
-    .comment {
-        margin-bottom: 10px;
-    }
+  .comment {
+    margin-bottom: 10px;
+  }
 
-    .comment-text {
-        margin-bottom: 5px;
-    }
+  .comment-text {
+    margin-bottom: 5px;
+  }
 
-    .comment-date {
-        text-align: right;
-        font-size: 12px;
-        color: #888888;
-    }
+  .comment-date {
+    text-align: right;
+    font-size: 12px;
+    color: #888888;
+  }
 
-    .comment {
-        display: flex;
-        justify-content: space-between;
-        align-items: baseline;
-        margin-bottom: 10px;
-    }
+  .comment {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 10px;
+  }
 
-    .dropdown-menu a.dropdown-item.custom-item:hover,
-    .dropdown-menu a.dropdown-item.custom-item:focus {
-        color: black !important;
-    }
+  .dropdown-menu a.dropdown-item.custom-item:hover,
+  .dropdown-menu a.dropdown-item.custom-item:focus {
+    color: black !important;
+  }
 
-    body.modal-open {
-        overflow: hidden;
-    }
+  body.modal-open {
+    overflow: hidden;
+  }
 
-    .modal-backdrop {
-        opacity: 0 !important;
-    }
+  .modal-backdrop {
+    opacity: 0 !important;
+  }
+  #commentInput{
+    background-color: transparent;
+
+  }
 </style>
 
 
 <section>
-    <div class="row" style="top: 7rem;">
-        <div class="col-md-5">
-            <div class="search-bar">
-                <form action="{% url 'journal_list' %}" method="GET" class="input-group">
-                    <input type="text" name="query" placeholder="Search..." class="form-control custom-height">
-                </form>
-            </div>
-        </div>
+  <div class="row" style="top: 7rem;">
+    <div class="col-md-5">
+      <div class="search-bar">
+        <form action="{% url 'journal_list' %}" method="GET" class="input-group">
+          <input type="text" name="query" placeholder="Search..." class="form-control custom-height">
+        </form>
+      </div>
     </div>
-    <br>
-    <div class="container-fluid mt-5">
-        <div class="row">
-            <div class="col-md-5 vertical-separator">
-                <div class="d-flex justify-content-between align-items-center">
-                    <h3 class="mb text-white">Manual Journal</h3>
-                        <a href="{% url 'add_journal' %}" class="btn btn-dark border-primary custom-height btn-center" style="width: 90px;color: #F86F03;">+ NEW</a>
-                        <div class="dropdown">
-                            <button class="btn btn-dark border-primary custom-height" style="width: 90px;color: #F86F03;" type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="fa fa-filter"></i>
-                            </button>
-                            <ul class="dropdown-menu bg-dark" aria-labelledby="filterDropdown">
-                                <li><a class="dropdown-item custom-item text-light" href="{% url 'journal_list' %}">All</a></li>
-                                <li><a class="dropdown-item custom-item text-light" href="{% url 'journal_list' %}?filter=draft">Draft</a></li>
-                                <li><a class="dropdown-item custom-item text-light" href="{% url 'journal_list' %}?filter=published">Published</a></li>
-                            </ul>
-                        </div>
-                </div>
-
-                <div class="list-group mt-3">
-                    {% for journal in journals %}
-                    <a href="#" class="list-item" data-journal-id="{{ journal.id }}"
-                        data-journal-details-url="{% url 'get_journal_details' %}">
-                        <div class="d-flex justify-content-between text-white">
-                            <span>{{ journal.date }}</span>
-                            <span><i class="fa fa-inr"></i>{{ journal.total_debit }}</span>
-                        </div>
-                        <div class="d-flex justify-content-between text-white mt-2">
-                            <span>{{ journal.journal_no }}</span>
-                            {% if journal.status == 'draft' %}
-                            <span class="status draft" style="color: orangered;">{{ journal.status }}</span>
-                            {% elif journal.status == 'published' %}
-                            <span class="status published text-success">{{ journal.status }}</span>
-                            {% else %}
-                            <span class="status">{{ journal.status }}</span>
-                            {% endif %}
-                        </div>
-                    </a>
-                    {% endfor %}
-                </div>
-            </div>
-            <div class="col-md-7">
-                <div class="d-flex justify-content-between align-items-center">
-                    <button class="btn btn-success btn-publish">Publish</button>
-                    <button class="btn btn-outline-danger template-button">Template</button>
-
-                    <button type="button" class="btn btn-info" data-toggle="modal" data-target="#myModal">
-                        Comments
-                    </button>
-
-                    <div class="modal" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
-                        aria-hidden="true">
-                        <div class="modal-dialog" role="document">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h4 class="modal-title" id="myModalLabel">Add Comment</h4>
-                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                        <span aria-hidden="true">&times;</span>
-                                    </button>
-                                </div>
-                                <div class="modal-body">
-                                    <form id="commentForm">
-                                        <div class="form-group">
-                                            <div id="commentsContainer"></div>
-                                            <label for="commentInput">Comment:</label>
-                                            <textarea class="form-control text-dark" id="commentInput" name="comment"
-                                                rows="3"></textarea>
-                                        </div>
-                                    
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="submit" class="btn btn-primary" id="submitCommentBtn">Submit</button>
-                                </div>
-                            </form>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- <div class="">                    
-                        <a href="#" class="text-white" style="margin-right: 10px;"><i
-                                class="fa fa-edit"></i></a>
-                        <a href="#" class="text-white" style="margin-right: 10px;"><i
-                                class="fa fa-file-pdf"></i></a>
-                        <a href="#" class="text-white" style="margin-right: 10px;"><i
-                                class="fa fa-print"></i></a>
-                        <a href="#" class="text-white" style="margin-right: 10px;"><i
-                                class="fa fa-paperclip"></i></a>
-                        <a href="#" class="text-white" style="margin-right: 10px;"><i
-                                class="fa fa-trash"></i></a>
-                    </div> -->
-                </div>
-                <div class="details-section mt-3 text-light">
-
-                </div>
-            </div>
+  </div>
+  <br>
+  <div class="container-fluid mt-5">
+    <div class="row">
+      <div class="col-md-5 vertical-separator">
+        <div class="d-flex justify-content-between align-items-center">
+          <h3 class="mb text-white">Manual Journal</h3>
+          <a href="{% url 'add_journal' %}" class="btn btn-dark border-primary custom-height btn-center" style="width: 90px;color: #F86F03;">+ NEW</a>
+          <div class="dropdown">
+            <button class="btn btn-dark border-primary custom-height" style="width: 90px;color: #F86F03;" type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+              <i class="fa fa-filter"></i>
+            </button>
+            <ul class="dropdown-menu bg-dark" aria-labelledby="filterDropdown">
+              <li><a class="dropdown-item custom-item text-light" href="{% url 'journal_list' %}">All</a></li>
+              <li><a class="dropdown-item custom-item text-light" href="{% url 'journal_list' %}?filter=draft">Draft</a></li>
+              <li><a class="dropdown-item custom-item text-light" href="{% url 'journal_list' %}?filter=published">Published</a></li>
+            </ul>
+          </div>
         </div>
+
+        <div class="list-group mt-3">
+          {% for journal in journals %}
+          <a href="#" class="list-item" data-journal-id="{{ journal.id }}"
+            data-journal-details-url="{% url 'get_journal_details' %}">
+            <div class="d-flex justify-content-between text-white">
+              <span>{{ journal.date }}</span>
+              <span><i class="fa fa-inr"></i>{{ journal.total_debit }}</span>
+            </div>
+            <div class="d-flex justify-content-between text-white mt-2">
+              <span>{{ journal.journal_no }}</span>
+              {% if journal.status == 'draft' %}
+              <span class="status draft" style="color: orangered;">{{ journal.status }}</span>
+              {% elif journal.status == 'published' %}
+              <span class="status published text-success">{{ journal.status }}</span>
+              {% else %}
+              <span class="status">{{ journal.status }}</span>
+              {% endif %}
+            </div>
+          </a>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="col-md-7">
+        <div class="d-flex justify-content-between align-items-center">
+          <button class="btn btn-success btn-publish">Publish</button>
+          <button class="btn btn-outline-danger template-button">Template</button>
+          <button type="button" class="btn btn-info" id="commentButton">
+            Comments
+          </button>
+        </div>
+        <div class="details-section mt-3 text-light"></div>
+      </div>
     </div>
+  </div>
 </section>
 
 <script>
-    $(document).ready(function() {
-        $('.btn-info').prop('disabled', true);
+  $(document).ready(function() {
+    $('.list-item').click(function() {
+      $('.list-item').removeClass('active');
+      $(this).addClass('active');
 
-        $('.list-item').click(function() {
-            $('.list-item').removeClass('active');
-            $(this).addClass('active');
-
-            $('.btn-info').prop('disabled', false);
-
-            var journalId = $(this).data('journal-id');
-            var journalDetailsUrl = $(this).data('journal-details-url');
-            $('.details-section').html('<p>Loading journal details...</p>');
-            $.ajax({
-                url: journalDetailsUrl,
-                method: 'GET',
-                data: {
-                    journal_id: journalId
-                },
-                success: function(response) {
-                    $('.details-section').html(response);
-                    loadJournalComments(journalId);
-                    $('.template-button').show();
-                },
-                error: function() {
-                    $('.details-section').html('<p>Failed to load journal details.</p>');
-                }
-            });
-        });
-
-        $('.btn-publish').click(function() {
-            var journalId = $('.list-item.active').data('journal-id');
-            var publishUrl = "{% url 'publish_journal' %}";
-            var csrfToken = "{{ csrf_token }}";
-            $.ajax({
-                url: publishUrl,
-                method: 'POST',
-                headers: {
-                    "X-CSRFToken": csrfToken
-                },
-                data: {
-                    journal_id: journalId,
-                },
-                success: function(response) {
-                    $('.details-section .status').text('Published');
-
-                    $('.list-item.active .status').text('Published');
-                },
-                error: function() {
-                    console.log('Failed to publish journal.');
-                }
-            });
-        });
-
-        $('.template-button').click(function() {
-            var selectedJournalId = $('.list-item.active').data('journal-id');
-            sessionStorage.setItem('selectedJournalId', selectedJournalId);
-            var journalDetailsUrl = "{% url 'journal_details' %}?journal_id=" + selectedJournalId;
-            window.location.href = journalDetailsUrl;
-        });
-
-        function loadJournalComments(journalId) {
-            var commentsUrl = "{% url 'journal_comments' %}";
-
-            $.ajax({
-                url: commentsUrl,
-                method: 'GET',
-                data: {
-                    journal_id: journalId
-                },
-                success: function(response) {
-                    var comments = response.comments;
-                    var commentsContainer = $('#commentsContainer');
-                    commentsContainer.empty();
-
-                    for (var i = 0; i < comments.length; i++) {
-                        var comment = comments[i];
-                        var commentHTML = '<div class="comment"><p>' + comment.text + '</p><p class="text-muted">Date: <span>' + comment.date_time + '</span></p></div>';
-                        commentsContainer.append(commentHTML);
-                    }
-                },
-                error: function() {
-                    console.log('Failed to load journal comments.');
-                }
-            });
+      var journalId = $(this).data('journal-id');
+      var journalDetailsUrl = $(this).data('journal-details-url');
+      $('.details-section').html('<p>Loading journal details...</p>');
+      $.ajax({
+        url: journalDetailsUrl,
+        method: 'GET',
+        data: {
+          journal_id: journalId
+        },
+        success: function(response) {
+          $('.details-section').html(response);
+          loadJournalComments(journalId);
+          $('.template-button').show();
+        },
+        error: function() {
+          $('.details-section').html('<p>Failed to load journal details.</p>');
         }
-
-        $('#commentForm').submit(function(event) {
-            event.preventDefault();
-
-            var comment = $('#commentInput').val();
-
-            saveJournalComment(comment);
-
-            $('#commentInput').val('');
-        });
-
-        function saveJournalComment(comment) {
-            var journalId = $('.list-item.active').data('journal-id');
-            var commentsUrl = "{% url 'journal_comments' %}";
-
-            $.ajax({
-                url: commentsUrl,
-                method: 'POST',
-                data: {
-                    journal_id: journalId,
-                    comment: comment,
-                    csrfmiddlewaretoken: '{{ csrf_token }}'
-                },
-                success: function(response) {
-                    var comment = response.comment;
-                    var commentHTML = '<div class="comment">' +
-                        '<div class="comment-text">' + comment.text + '</div>' +
-                        '<div class="comment-date">' + comment.date_time + '</div>' +
-                        '</div>';
-                    $('#commentsContainer').prepend(commentHTML);
-                },
-                error: function() {
-                    console.log('Failed to save journal comment.');
-                }
-            });
-        }
-
-        $('#myModal').on('hidden.bs.modal', function() {
-            var journalId = $('.list-item.active').data('journal-id');
-            loadJournalDetails(journalId);
-        });
-
-        function loadJournalDetails(journalId) {
-            var journalDetailsUrl = $('.list-item.active').data('journal-details-url');
-            $('.details-section').html('<p>Loading journal details...</p>');
-            $.ajax({
-                url: journalDetailsUrl,
-                method: 'GET',
-                data: {
-                    journal_id: journalId
-                },
-                success: function(response) {
-                    $('.details-section').html(response);
-                    loadJournalComments(journalId);
-                },
-                error: function() {
-                    $('.details-section').html('<p>Failed to load journal details.</p>');
-                }
-            });
-        }
+      });
     });
+
+    $('.btn-publish').click(function() {
+      var journalId = $('.list-item.active').data('journal-id');
+      var publishUrl = "{% url 'publish_journal' %}";
+      var csrfToken = "{{ csrf_token }}";
+      $.ajax({
+        url: publishUrl,
+        method: 'POST',
+        headers: {
+          "X-CSRFToken": csrfToken
+        },
+        data: {
+          journal_id: journalId,
+        },
+        success: function(response) {
+          $('.details-section .status').text('Published');
+          $('.list-item.active .status').text('Published');
+        },
+        error: function() {
+          console.log('Failed to publish journal.');
+        }
+      });
+    });
+
+    $('.template-button').click(function() {
+      var selectedJournalId = $('.list-item.active').data('journal-id');
+      sessionStorage.setItem('selectedJournalId', selectedJournalId);
+      var journalDetailsUrl = "{% url 'journal_details' %}?journal_id=" + selectedJournalId;
+      window.location.href = journalDetailsUrl;
+    });
+
+    $('#commentButton').click(function() {
+      var journalId = $('.list-item.active').data('journal-id');
+      var commentUrl = "{% url 'journal_comments' %}";
+
+      $('.details-section').html('<p>Loading comments...</p>');
+      $.ajax({
+        url: commentUrl,
+        method: 'GET',
+        data: {
+          journal_id: journalId
+        },
+        success: function(response) {
+          var comments = response.comments;
+          var commentsHTML = '';
+
+          if (comments.length > 0) {
+            commentsHTML += '<h4>Comments:</h4>';
+
+            for (var i = 0; i < comments.length; i++) {
+              var comment = comments[i];
+              commentsHTML += '<div class="comment">' +
+                '<p>' + comment.text + '</p>' +
+                '<p class="text-muted">Date: <span>' + comment.date_time + '</span></p>' +
+                '</div>';
+            }
+          } else {
+            commentsHTML += '<p>No comments found.</p>';
+          }
+
+          commentsHTML += '<form id="commentForm">' +
+            '<div class="form-group">' +
+            '<label>Add Comment:</label>' +
+            '<textarea class="form-control" id="commentInput" rows="3"></textarea>' +
+            '</div>' +
+            '<button type="submit" class="btn btn-primary">Submit</button>' +
+            '</form>';
+
+          $('.details-section').html(commentsHTML);
+        },
+        error: function() {
+          $('.details-section').html('<p>Failed to load comments.</p>');
+        }
+      });
+    });
+
+    function loadJournalComments(journalId) {
+      var commentsUrl = "{% url 'journal_comments' %}";
+
+      $.ajax({
+        url: commentsUrl,
+        method: 'GET',
+        data: {
+          journal_id: journalId
+        },
+        success: function(response) {
+          var comments = response.comments;
+          var commentsContainer = $('#commentsContainer');
+          commentsContainer.empty();
+
+          for (var i = 0; i < comments.length; i++) {
+            var comment = comments[i];
+            var commentHTML = '<div class="comment"><p>' + comment.text + '</p><p class="text-muted">Date: <span>' + comment.date_time + '</span></p></div>';
+            commentsContainer.append(commentHTML);
+          }
+        },
+        error: function() {
+          console.log('Failed to load journal comments.');
+        }
+      });
+    }
+
+
+    $(document).on('submit', '#commentForm', function (event) {
+  event.preventDefault();
+
+  var comment = $('#commentInput').val();
+  var journalId = $('.list-item.active').data('journal-id');
+
+  saveJournalComment(comment, journalId);
+  $('#commentInput').val('');
+});
+
+function saveJournalComment(comment, journalId) {
+  var addCommentUrl = "{% url 'add_comment' 0 %}".replace('0', journalId);
+  var csrfToken = "{{ csrf_token }}";
+
+  $.ajax({
+    url: addCommentUrl,
+    method: 'POST',
+    headers: {
+      "X-CSRFToken": csrfToken
+    },
+    data: {
+      'comment': comment
+    },
+    success: function (data) {
+     
+      loadJournalComments(journalId);
+    },
+    error: function (error) {
+      console.log('Failed to save the comment:', error);
+    }
+  });
+
+  $('#commentInput').val('');
+}
+
+
+
+
+    function loadJournalDetails(journalId) {
+      var journalDetailsUrl = $('.list-item.active').data('journal-details-url');
+      $('.details-section').html('<p>Loading journal details...</p>');
+      $.ajax({
+        url: journalDetailsUrl,
+        method: 'GET',
+        data: {
+          journal_id: journalId
+        },
+        success: function(response) {
+          $('.details-section').html(response);
+          loadJournalComments(journalId);
+        },
+        error: function() {
+          $('.details-section').html('<p>Failed to load journal details.</p>');
+        }
+      });
+    }
+  });
+
 </script>
 {% endblock %}

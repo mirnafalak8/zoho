@@ -1,20 +1,31 @@
-<!-- journal_comments.html -->
-<div class="comments-view-section">
-    {% for comment in comments %}
-    <div class="comment">
-        <p>{{ comment.text }}</p>
-        <p class="text-muted">{{ comment.date_time }}</p>
-    </div>
-    {% empty %}
-    <p>No comments available.</p>
-    {% endfor %}
-</div>
+<!-- <!DOCTYPE html>
+<html lang="en">
 
-<form id="commentForm" method="POST">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Journal Comments</title>
+  <style>
+    textarea {
+      background-color: transparent;
+    }
+  </style>
+</head>
+
+<body>
+  <h4>Journal Comments:</h4>
+
+  <ul>
+    {% for comment in comments %}
+    <li>{{ comment.text }} - {{ comment.date_time }}</li>
+    {% endfor %}
+  </ul>
+
+  <form id="commentForm" method="POST" action="{% url 'add_comment' journal.id %}">
     {% csrf_token %}
-    <div class="form-group">
-        <label for="commentInput">Add Comment</label>
-        <textarea class="form-control" id="commentInput" name="comment" rows="3"></textarea>
-    </div>
-    <button type="submit" class="btn btn-primary">Submit</button>
-</form>
+    <textarea name="comment" id="commentInput"></textarea>
+    <button type="submit" class="text-success">Add Comment</button>
+  </form>
+</body>
+
+</html> -->

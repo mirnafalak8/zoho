@@ -128,6 +128,7 @@ urlpatterns = [
     # path('add_comment/<int:journal_id>/', views.add_comment, name='add_comment'),
     # path('get_comments/<int:journal_id>/', views.get_comments, name='get_comments'),
     path('journal_comments/', views.journal_comments, name='journal_comments'),
+    path('add_comment/<int:journal_id>/', views.add_comment, name='add_comment'),
     path('edit_journal/<int:journal_id>/', views.edit_journal, name='edit_journal'),
     # path('update_journal/<int:journal_id>/', views.update_journal, name='update_journal'),
     path('journal_details/', views.journal_details, name='journal_details'),
