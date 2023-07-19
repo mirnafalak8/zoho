@@ -1,3 +1,25 @@
+<div class="comments-view-section">
+    {% for comment in comments %}
+    <div class="comment">
+        <p>{{ comment.text }}</p>
+        <p class="text-muted">{{ comment.date_time }}</p>
+    </div>
+    {% empty %}
+    <p>No comments available.</p>
+    {% endfor %}
+</div>
+
+<form id="commentForm" method="POST">
+    {% csrf_token %}
+    <div class="form-group">
+        <label for="commentInput">Add Comment</label>
+        <textarea class="form-control" id="commentInput" name="comment" rows="3"></textarea>
+    </div>
+    <button type="submit" class="btn btn-primary">Submit</button>
+</form>
+
+
+
 <!-- <!DOCTYPE html>
 <html lang="en">
 

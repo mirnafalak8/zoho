@@ -193,24 +193,15 @@
                     {% else %}
                     <td class="text-light"><a href="{% url 'chartofaccount_view' v.id%}">{{v.account_name}}</a> </td>
                     {% endif %}
-
                    {% endif %}               
                 {% endif %}
-
-              
-            
             <td class="text-light">{{v.account_type}}</td>
             <td class="text-light">{{v.account_code}}</td>
-            <td class="text-light"> {{v.status}}</td>
-            
-         
-
-           
+            <td class="text-light"> {{v.status}}</td> 
           </tr>
           {% endfor %}
         </tbody>
       </table>
-
     </div>
   </div>
 
