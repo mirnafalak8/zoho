@@ -11,6 +11,7 @@
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 <style>
+   
     .custom-form {
         max-width: 900px;
         margin: 0 auto;
@@ -204,7 +205,9 @@ tr:hover{
     .select-box1.active .select-option1:after{
       transform: rotate(-180deg);
     }
-    
+    label{
+      color: #fff;
+    }
 </style>
 <section style="height: 150vh; overflow: auto;">
     <div class="container">
@@ -277,7 +280,7 @@ tr:hover{
                         </thead>
                         <tbody>
                             <tr>
-                                <td>1</td>
+                                <td class="text-light">1</td>
                                 <td>
                                     <div class="input-group">
                                         <select name="account" class="form-control">
@@ -1040,6 +1043,8 @@ tr:hover{
         var creditsCell = row.insertCell(5);
         var actionCell = row.insertCell(6);
 
+        numberCell.style.color = "white";
+
         numberCell.innerHTML = rowCount;
         accountCell.innerHTML = `
     <div class="input-group">
@@ -1131,8 +1136,8 @@ tr:hover{
                 var option = document.createElement('option');
                 option.value = response.accountName;
                 option.text = response.accountName;
-                accountSelect.add(option); // Add the newly created option to the select element
-                accountSelect.value = response.accountName; // Set the selected value to the newly created account
+                accountSelect.add(option); 
+                accountSelect.value = response.accountName; 
 
                 $('#myModal').modal('hide');
             } else {

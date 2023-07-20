@@ -61,7 +61,7 @@
   <p>Currency: {{ journal.currency }}</p>
   <ul>
     {% for entry in journal_entries %}
-    <li>Account name:{{ entry.account }} - Description: {{entry.description}} Contact: {{ entry.contact }}, Debits: {{ entry.debits }}, Credits: {{ entry.credits }}</li>
+    <li>Account name: {{ entry.account }} - Description: {{entry.description}} Contact: {{ entry.contact }}, Debits: {{ entry.debits }}, Credits: {{ entry.credits }}</li>
     {% endfor %}
   </ul>
   <p>Total Debit: {{ journal.total_debit }}</p>

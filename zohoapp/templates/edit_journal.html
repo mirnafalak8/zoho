@@ -199,6 +199,9 @@ tr:hover{
     .select-box1.active .select-option1:after{
       transform: rotate(-180deg);
     }
+    label{
+      color:#fff;
+    }
 </style>
 <section style="height: 150vh; overflow: auto;">
     <div class="container">
@@ -273,13 +276,13 @@ tr:hover{
                         <tbody>
                             {% for journal_entry in journal.journalentry_set.all %}
                             <tr>
-                                <td>{{ forloop.counter }}</td>
+                                <td class="text-white">{{ forloop.counter }}</td>
                                 <td>
                                     <div class="input-group">
                                     <select name="account" class="form-control">
                                         <option value="">Select Account</option>
                                         {% for account in accounts %}
-                                        <option value="{{ account.account_name }}" {% if journal_entry.account == account.account_name %}selected{% endif %}>{{ account.accountName }}</option>
+                                        <option value="{{ account.account_name }}" {% if journal_entry.account == account.account_name %}selected{% endif %}>{{ account.account_name }}</option>
                                         {% endfor %}
                                     </select>
                                     <div class="input-group-append">
@@ -358,7 +361,7 @@ tr:hover{
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div> -->
             <div class="modal-body">
-                <form action="{% url 'create_account_journal'%}" method="POST" enctype="multipart/form-data">
+                <form action="{% url 'account_edit_journal'%}" method="POST" enctype="multipart/form-data">
                     {% csrf_token%}
                     <div class="modal" id="create_account">
                       <div class="modal-dialog modal-xl modal-dialog-centered " role="document">
@@ -1024,6 +1027,9 @@ tr:hover{
         var debitsCell = row.insertCell(4);
         var creditsCell = row.insertCell(5);
         var actionCell = row.insertCell(6);
+
+        numberCell.style.color = "white";
+
 
         numberCell.innerHTML = rowCount;
         accountCell.innerHTML = `

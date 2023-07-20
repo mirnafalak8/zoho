@@ -197,7 +197,11 @@
                     class="fa fa-trash"></i></a>
         </div> -->
     </div>
-    <div class="details-section mt-3 text-light"></div>
+    <div class="details-section mt-3 text-light">
+
+
+      
+    </div>
 
       </div>
     </div>
@@ -327,13 +331,11 @@
           });
       }
 
-      // Update journal details after modal is closed
       $('#myModal').on('hidden.bs.modal', function() {
           var journalId = $('.list-item.active').data('journal-id');
           loadJournalDetails(journalId);
       });
 
-      // Function to load journal details
       function loadJournalDetails(journalId) {
           var journalDetailsUrl = $('.list-item.active').data('journal-details-url');
           $('.details-section').html('<p>Loading journal details...</p>');
