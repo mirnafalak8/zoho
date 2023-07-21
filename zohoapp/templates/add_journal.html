@@ -8,6 +8,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.5.0/js/bootstrap.min.js"></script> -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
 <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 <style>
@@ -282,18 +283,18 @@ tr:hover{
                             <tr>
                                 <td class="text-light">1</td>
                                 <td>
-                                    <div class="input-group">
-                                        <select name="account" class="form-control">
-                                            <option value="">Select Account</option>
-                                            {% for account in accounts %}
+                                  <div class="input-group">
+                                    <select id="accountSelect" name="account" class="form-control">
+                                        <option value="">Select Account</option>
+                                        {% for account in accounts %}
                                             <option value="{{ account.account_name }}">{{ account.account_name }}</option>
-                                            {% endfor %}
-                                        </select>
-                                        <div class="input-group-append">
-                                            <button type="button" class="form-control btn btn-primary"
-                                                onclick="openModal()" data-toggle="modal" data-target="#create_account">+</button>
-                                        </div>
+                                        {% endfor %}
+                                    </select>
+                                    <div class="input-group-append">
+                                        <button type="button" class="form-control btn btn-primary" onclick="openModal()" data-toggle="modal" data-target="#create_account">+</button>
                                     </div>
+                                </div>
+                                
                                 </td>
                                 <td><input type="text" name="description" class="form-control"></td>
                                 <td>
@@ -374,7 +375,7 @@ tr:hover{
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div> -->
             <div class="modal-body">
-                <form action="{% url 'create_account_journal'%}" method="POST" enctype="multipart/form-data">
+                <form action="{% url 'create_account_journal'%}" id="accountForm" method="POST" enctype="multipart/form-data">
                     {% csrf_token%}
                     <div class="modal" id="create_account">
                       <div class="modal-dialog modal-xl modal-dialog-centered " role="document">
@@ -1030,6 +1031,7 @@ tr:hover{
 </div>
 
 <script>
+  let rowIndex = 1;
     function addRow() {
         var table = document.getElementById("journal_table");
         var rowCount = table.rows.length;
@@ -1046,6 +1048,8 @@ tr:hover{
         numberCell.style.color = "white";
 
         numberCell.innerHTML = rowCount;
+        var accountId = `account_${rowIndex}`;
+
         accountCell.innerHTML = `
     <div class="input-group">
         <select name="account" class="form-control">
@@ -1059,6 +1063,7 @@ tr:hover{
         </div>
     </div>
 `;
+  rowIndex++;
         descriptionCell.innerHTML = '<input type="text" name="description" class="form-control">';
         var options = '';
         options += '<option value="">Select Contact</option>';
@@ -1116,38 +1121,73 @@ tr:hover{
         }
     }
     function openModal() {
+        $('#accountForm')[0].reset();
         $('#myModal').modal('show');
     }
     
     $('#accountForm').submit(function (e) {
     e.preventDefault();
-
     var form = $(this);
     var url = form.attr('action');
     var formData = form.serialize();
 
     $.ajax({
-        type: 'POST',
-        url: url,
-        data: formData,
-        success: function (response) {
-            if (response.success === true) {
-                var accountSelect = document.querySelector('select[name="account"]');
-                var option = document.createElement('option');
-                option.value = response.accountName;
-                option.text = response.accountName;
-                accountSelect.add(option); 
-                accountSelect.value = response.accountName; 
-
-                $('#myModal').modal('hide');
-            } else {
-                console.log(response.message);
-            }
-        },
-        error: function (xhr, status, error) {
-            console.error(error);
+      type: 'POST',
+      url: url,
+      data: formData,
+      success: function (response) {
+        if (response.success === true) {
+          var accountSelect = $('select[name="account"]');
+          var option = $('<option>', {
+            value: response.account_name,
+            text: response.account_name
+          });
+          accountSelect.append(option).val(response.account_name);
+          $('#myModal').modal('hide');
+        } else {
+          console.log(response.message);
         }
+      },
+      error: function (xhr, status, error) {
+        console.error(error);
+      }
     });
+
+    function submitForm() {
+      var accountId = $('#accountForm').attr('data-account');
+    var form = document.querySelector(`form[data-account="${accountId}"]`);
+    var formData = new FormData(form);
+
+    fetch(form.action, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success === true) {
+            var accountSelect = document.querySelector(`select[name="${accountId}"]`);
+            var option = document.createElement('option');
+            option.value = data.account_name;
+            option.text = data.account_name;
+            accountSelect.add(option);
+            accountSelect.value = data.account_name;
+
+            $('#myModal').modal('hide');
+        } else {
+            console.log(data.error);
+        }
+    })
+    .catch(error => {
+        console.error(error);
+    });
+}
+
+$('#accountForm').submit(function (e) {
+    e.preventDefault();
+    submitForm();
+});
+
+
 });
 </script>
 

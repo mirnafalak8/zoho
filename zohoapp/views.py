@@ -2814,8 +2814,9 @@ def create_account_journal(request):
             a.currency = request.POST.get("currency",None)
 
         a.save()
-        return redirect('add_journal')
-    return redirect('add_journal')
+        return JsonResponse({'success': True, 'account_name': a.account_name})
+
+    return JsonResponse({'error': 'Invalid request method'}, status=405)
 
 def account_edit_journal(request):
     if request.method=='POST':
@@ -2919,7 +2920,6 @@ def account_edit_journal(request):
         # return HttpResponseRedirect(reverse('edit_journal', kwargs={'journal_id': journal_id}))
         return redirect('edit_journal')
     return redirect('edit_journal')
-
 
 def manual_journal_home(request):
     query = request.GET.get('query')
