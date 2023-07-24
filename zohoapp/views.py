@@ -3053,7 +3053,8 @@ def journal_list(request):
         elif filter_param == 'published':
             journals = journals.filter(status='published')
 
-    return render(request, 'journal_list.html', {'journals': journals})
+    selected_journal_id = request.GET.get('selected_journal_id')
+    return render(request, 'journal_list.html', {'journals': journals, 'selected_journal_id': selected_journal_id})
 
 def journal_details(request):
     journal_id = request.GET.get('journal_id')
@@ -3103,7 +3104,7 @@ def get_journal_details(request):
         'company_name': company_name,
         'address': address,
     }
-    return render(request, 'journal_details.html',context)
+    return render(request, 'journal_details.html',context) 
 
 def publish_journal(request):
     if request.method == 'POST':

@@ -98,7 +98,7 @@
     <div class="col-md-5">
       <div class="search-bar">
         <form action="{% url 'journal_list' %}" method="GET" class="input-group">
-          <input type="text" name="query" placeholder="Search..." class="form-control custom-height">
+          <input type="text" name="query" placeholder="Search..." class="form-control custom-height text-dark">
         </form>
       </div>
     </div>
@@ -128,8 +128,7 @@
 
         <div class="list-group mt-3">
           {% for journal in journals %}
-          <a href="#" class="list-item" data-journal-id="{{ journal.id }}"
-            data-journal-details-url="{% url 'get_journal_details' %}">
+          <a href="#" class="list-item" data-journal-id="{{ journal.id }}" data-journal-details-url="{% url 'get_journal_details' %}?journal_id={{ journal.id }}">
             <div class="d-flex justify-content-between text-white">
               <span>{{ journal.date }}</span>
               <span><i class="fa fa-inr"></i>{{ journal.total_debit }}</span>
@@ -209,150 +208,158 @@
 
 <script>
   $(document).ready(function() {
-      $('.btn-info').prop('disabled', true);
+    $('.btn-info').prop('disabled', true);
 
-      $('.list-item').click(function() {
-          $('.list-item').removeClass('active');
-          $(this).addClass('active');
+    $('.list-item').click(function() {
+      $('.list-item').removeClass('active');
+      $(this).addClass('active');
 
-          $('.btn-info').prop('disabled', false);
+      $('.btn-info').prop('disabled', false);
 
-          var journalId = $(this).data('journal-id');
-          var journalDetailsUrl = $(this).data('journal-details-url');
-          $('.details-section').html('<p>Loading journal details...</p>');
-          $.ajax({
-              url: journalDetailsUrl,
-              method: 'GET',
-              data: {
-                  journal_id: journalId
-              },
-              success: function(response) {
-                  $('.details-section').html(response);
-                  loadJournalComments(journalId);
-                  $('.template-button').show();
-              },
-              error: function() {
-                  $('.details-section').html('<p>Failed to load journal details.</p>');
-              }
-          });
+      var journalId = $(this).data('journal-id');
+      var journalDetailsUrl = $(this).data('journal-details-url');
+      $('.details-section').html('<p>Loading journal details...</p>');
+      $.ajax({
+        url: journalDetailsUrl,
+        method: 'GET',
+        data: {
+          journal_id: journalId
+        },
+        success: function(response) {
+          $('.details-section').html(response);
+          loadJournalComments(journalId);
+          $('.template-button').show();
+        },
+        error: function() {
+          $('.details-section').html('<p>Failed to load journal details.</p>');
+        }
       });
+    });
 
-      $('.btn-publish').click(function() {
-          var journalId = $('.list-item.active').data('journal-id');
-          var publishUrl = "{% url 'publish_journal' %}";
-          var csrfToken = "{{ csrf_token }}";
-          $.ajax({
-              url: publishUrl,
-              method: 'POST',
-              headers: {
-                  "X-CSRFToken": csrfToken
-              },
-              data: {
-                  journal_id: journalId,
-              },
-              success: function(response) {
-                  $('.details-section .status').text('Published');
+    $('.btn-publish').click(function() {
+      var journalId = $('.list-item.active').data('journal-id');
+      var publishUrl = "{% url 'publish_journal' %}";
+      var csrfToken = "{{ csrf_token }}";
+      $.ajax({
+        url: publishUrl,
+        method: 'POST',
+        headers: {
+          "X-CSRFToken": csrfToken
+        },
+        data: {
+          journal_id: journalId,
+        },
+        success: function(response) {
+          $('.details-section .status').text('Published');
 
-                  $('.list-item.active .status').text('Published');
-              },
-              error: function() {
-                  console.log('Failed to publish journal.');
-              }
-          });
+          $('.list-item.active .status').text('Published');
+        },
+        error: function() {
+          console.log('Failed to publish journal.');
+        }
       });
+    });
 
-      $('.template-button').click(function() {
-          var selectedJournalId = $('.list-item.active').data('journal-id');
-          sessionStorage.setItem('selectedJournalId', selectedJournalId);
-          var journalDetailsUrl = "{% url 'journal_details' %}?journal_id=" + selectedJournalId;
-          window.location.href = journalDetailsUrl;
+    $('.template-button').click(function() {
+      var selectedJournalId = $('.list-item.active').data('journal-id');
+      sessionStorage.setItem('selectedJournalId', selectedJournalId);
+      var journalDetailsUrl = "{% url 'journal_details' %}?journal_id=" + selectedJournalId;
+      window.location.href = journalDetailsUrl;
+    });
+
+    function loadJournalComments(journalId) {
+      var commentsUrl = "{% url 'journal_comments' %}";
+
+      $.ajax({
+        url: commentsUrl,
+        method: 'GET',
+        data: {
+          journal_id: journalId
+        },
+        success: function(response) {
+          var comments = response.comments;
+          var commentsContainer = $('#commentsContainer');
+          commentsContainer.empty();
+
+          for (var i = 0; i < comments.length; i++) {
+            var comment = comments[i];
+            var commentHTML = '<div class="comment"><p>' + comment.text + '</p><p class="text-muted">Date: <span>' + comment.date_time + '</span></p></div>';
+            commentsContainer.append(commentHTML);
+          }
+        },
+        error: function() {
+          console.log('Failed to load journal comments.');
+        }
       });
+    }
 
-      function loadJournalComments(journalId) {
-          var commentsUrl = "{% url 'journal_comments' %}";
+    $('#commentForm').submit(function(event) {
+      event.preventDefault();
 
-          $.ajax({
-              url: commentsUrl,
-              method: 'GET',
-              data: {
-                  journal_id: journalId
-              },
-              success: function(response) {
-                  var comments = response.comments;
-                  var commentsContainer = $('#commentsContainer');
-                  commentsContainer.empty();
+      var comment = $('#commentInput').val();
 
-                  for (var i = 0; i < comments.length; i++) {
-                      var comment = comments[i];
-                      var commentHTML = '<div class="comment"><p>' + comment.text + '</p><p class="text-muted">Date: <span>' + comment.date_time + '</span></p></div>';
-                      commentsContainer.append(commentHTML);
-                  }
-              },
-              error: function() {
-                  console.log('Failed to load journal comments.');
-              }
-          });
-      }
+      saveJournalComment(comment);
 
-      $('#commentForm').submit(function(event) {
-          event.preventDefault();
+      $('#commentInput').val('');
+    });
 
-          var comment = $('#commentInput').val();
+    function saveJournalComment(comment) {
+      var journalId = $('.list-item.active').data('journal-id');
+      var commentsUrl = "{% url 'journal_comments' %}";
 
-          saveJournalComment(comment);
-
-          $('#commentInput').val('');
+      $.ajax({
+        url: commentsUrl,
+        method: 'POST',
+        data: {
+          journal_id: journalId,
+          comment: comment,
+          csrfmiddlewaretoken: '{{ csrf_token }}'
+        },
+        success: function(response) {
+          var comment = response.comment;
+          var commentHTML = '<div class="comment">' +
+            '<div class="comment-text">' + comment.text + '</div>' +
+            '<div class="comment-date">' + comment.date_time + '</div>' +
+            '</div>';
+          $('#commentsContainer').prepend(commentHTML);
+        },
+        error: function() {
+          console.log('Failed to save journal comment.');
+        }
       });
+    }
 
-      function saveJournalComment(comment) {
-          var journalId = $('.list-item.active').data('journal-id');
-          var commentsUrl = "{% url 'journal_comments' %}";
+    $('#myModal').on('hidden.bs.modal', function() {
+      var journalId = $('.list-item.active').data('journal-id');
+      loadJournalDetails(journalId);
+    });
 
-          $.ajax({
-              url: commentsUrl,
-              method: 'POST',
-              data: {
-                  journal_id: journalId,
-                  comment: comment,
-                  csrfmiddlewaretoken: '{{ csrf_token }}'
-              },
-              success: function(response) {
-                  var comment = response.comment;
-                  var commentHTML = '<div class="comment">' +
-                      '<div class="comment-text">' + comment.text + '</div>' +
-                      '<div class="comment-date">' + comment.date_time + '</div>' +
-                      '</div>';
-                  $('#commentsContainer').prepend(commentHTML);
-              },
-              error: function() {
-                  console.log('Failed to save journal comment.');
-              }
-          });
-      }
-
-      $('#myModal').on('hidden.bs.modal', function() {
-          var journalId = $('.list-item.active').data('journal-id');
-          loadJournalDetails(journalId);
+    function loadJournalDetails(journalId) {
+      var journalDetailsUrl = $('.list-item.active').data('journal-details-url');
+      $('.details-section').html('<p>Loading journal details...</p>');
+      $.ajax({
+        url: journalDetailsUrl,
+        method: 'GET',
+        data: {
+          journal_id: journalId
+        },
+        success: function(response) {
+          $('.details-section').html(response);
+          loadJournalComments(journalId);
+        },
+        error: function() {
+          $('.details-section').html('<p>Failed to load journal details.</p>');
+        }
       });
+    }
 
-      function loadJournalDetails(journalId) {
-          var journalDetailsUrl = $('.list-item.active').data('journal-details-url');
-          $('.details-section').html('<p>Loading journal details...</p>');
-          $.ajax({
-              url: journalDetailsUrl,
-              method: 'GET',
-              data: {
-                  journal_id: journalId
-              },
-              success: function(response) {
-                  $('.details-section').html(response);
-                  loadJournalComments(journalId);
-              },
-              error: function() {
-                  $('.details-section').html('<p>Failed to load journal details.</p>');
-              }
-          });
-      }
+    // Load details for the selected journal on page load, if available
+    var selectedJournalId = sessionStorage.getItem('selectedJournalId');
+    if (selectedJournalId) {
+      loadJournalDetails(selectedJournalId);
+      $('.list-item[data-journal-id="' + selectedJournalId + '"]').addClass('active');
+    }
   });
 </script>
-{% endblock %} 
+
+{% endblock %}

@@ -38,7 +38,7 @@
         <div class="search-bar-container">
             <form action="{% url 'manual_journal_home' %}" method="GET">
                 <div class="input-group" style="width: 300px;">
-                    <input type="text" name="query" placeholder="Search..." class="form-control custom-height bg-light">
+                    <input type="text" name="query" placeholder="Search..." class="form-control custom-height bg-light text-dark">
                 </div>
             </form>
             <div class="btn-group ml-auto">
@@ -46,13 +46,6 @@
             </div>
             <div class="dropdown">
                 <button class="btn btn-dark border-primary custom-height" style="width: 90px;color: #F86F03;" type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                    <!-- {% if filter_type == 'draft' %}
-                        Draft
-                    {% elif filter_type == 'published' %}
-                        Published
-                    {% else %}
-                        Filter
-                    {% endif %} -->
                     <i class="fa fa-filter"></i>
                 </button>
                 <ul class="dropdown-menu" aria-labelledby="filterDropdown">
@@ -79,38 +72,36 @@
             </thead>
             <tbody>
                 {% for entry in journal %}
-                <tr>
-                    <td><a href="{% url 'journal_list' %}">{{ entry.date }}</a></td>
-                    <td><a href="{% url 'journal_list' %}">{{ entry.journal_no }}</a></td>
-                    <td><a href="{% url 'journal_list' %}">{{ entry.reference_no }}</a></td>
+                <tr class="journal-row" data-journal-id="{{ entry.id }}">
+                    <td>{{ entry.date }}</td>
+                    <td>{{ entry.journal_no }}</td>
+                    <td>{{ entry.reference_no }}</td>
                     <td>
-                        <a href="{% url 'journal_list' %}">
-                            {% if entry.status == 'published' %}
-                                <span class="status published text-success">{{ entry.status }}</span>
-                            {% else %}
-                                <span class="status" style="color: orangered;">{{ entry.status }}</span>
-                            {% endif %}
-                        </a>
-                    </td> 
-                    <td>
-                        <a href="{% url 'journal_list' %}">
-                            <div class="note-icon" data-toggle="tooltip" data-placement="top" title="{{ entry.notes }}"><i class="fas fa-sticky-note"></i></div>
-                        </a>
+                        {% if entry.status == 'published' %}
+                        <span class="status published text-success">{{ entry.status }}</span>
+                        {% else %}
+                        <span class="status" style="color: orangered;">{{ entry.status }}</span>
+                        {% endif %}
                     </td>
-                    <td><a href="{% url 'journal_list' %}"><i class="fa fa-inr"></i>{{ entry.total_debit }}</a></td>
+                    <td>
+                        <div class="note-icon" data-toggle="tooltip" data-placement="top" title="{{ entry.notes }}"><i class="fas fa-sticky-note"></i></div>
+                    </td>
+                    <td><i class="fa fa-inr"></i>{{ entry.total_debit }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
 </section>
-
-{% endblock %}
-
-{% block scripts %}
 <script>
     $(document).ready(function() {
         $('[data-toggle="tooltip"]').tooltip();
+
+        // Handle click event on each row
+        $('.journal-row').click(function() {
+            var journalId = $(this).data('journal-id');
+            window.location.href = "{% url 'journal_list' %}?journal_id=" + journalId;
+        });
     });
 </script>
 {% endblock %}
