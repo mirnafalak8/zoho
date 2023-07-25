@@ -95,13 +95,12 @@
 </section>
 <script>
     $(document).ready(function() {
-        $('[data-toggle="tooltip"]').tooltip();
-
-        // Handle click event on each row
-        $('.journal-row').click(function() {
-            var journalId = $(this).data('journal-id');
-            window.location.href = "{% url 'journal_list' %}?journal_id=" + journalId;
-        });
+      $('[data-toggle="tooltip"]').tooltip();
+  
+      $('.journal-row').click(function() {
+        var journalId = $(this).data('journal-id');
+        window.location.href = "{% url 'journal_list' %}?journal_id=" + journalId;
+      });
     });
-</script>
+  </script>
 {% endblock %}

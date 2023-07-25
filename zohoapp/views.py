@@ -3053,30 +3053,48 @@ def journal_list(request):
         elif filter_param == 'published':
             journals = journals.filter(status='published')
 
-    selected_journal_id = request.GET.get('selected_journal_id')
-    return render(request, 'journal_list.html', {'journals': journals, 'selected_journal_id': selected_journal_id})
+    journal_id = request.GET.get('journal_id')
+    selected_journal = None
+    journal_entries = None
+    if journal_id:
+        try:
+            selected_journal = Journal.objects.get(id=journal_id)
+            journal_entries = JournalEntry.objects.filter(journal=selected_journal)
+        except Journal.DoesNotExist:
+                selected_journal = None
+    
+    return render(request, 'journal_list.html', {'journals': journals, 'selected_journal': selected_journal,'journal_entries': journal_entries})
 
 def journal_details(request):
-    journal_id = request.GET.get('journal_id')
-    journal = get_object_or_404(Journal, id=journal_id)
-    journal_entries = JournalEntry.objects.filter(journal=journal)
-    
-    try:
-        company = company_details.objects.get(user=request.user)
-        company_name = company.company_name
-        address = company.address
-    except company_details.DoesNotExist:
-        company_name = ''
-        address = ''
-    
-    context = {
-        'journal': journal,
-        'journal_entries': journal_entries,
-        'company_name': company_name,
-        'address': address,
-    }
-    
-    return render(request, 'journal_template.html', context)
+    selected_journal_id = request.GET.get('journal_id')
+    selected_journal = None
+    if selected_journal_id:
+        try:
+            selected_journal = Journal.objects.get(id=selected_journal_id)
+        except Journal.DoesNotExist:
+            selected_journal = None
+
+    if selected_journal:
+        journal_entries = JournalEntry.objects.filter(journal=selected_journal)
+
+        try:
+            company = company_details.objects.get(user=request.user)
+            company_name = company.company_name
+            address = company.address
+        except company_details.DoesNotExist:
+            company_name = ''
+            address = ''
+
+        context = {
+            'selected_journal': selected_journal,
+            'journal_entries': journal_entries,
+            'company_name': company_name,
+            'address': address,
+        }   
+
+        return render(request, 'journal_template.html', context)
+    else:
+        return redirect('journal_list')
 
 
 def delete_journal(request, journal_id):
