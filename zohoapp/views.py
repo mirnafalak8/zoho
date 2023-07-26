@@ -3106,6 +3106,7 @@ def delete_journal(request, journal_id):
 
 def get_journal_details(request):
     journal_id = request.GET.get('journal_id')
+    print(f"Received journal_id: {journal_id}")
     journal = get_object_or_404(Journal, id=journal_id)
     journal_entries = JournalEntry.objects.filter(journal=journal)
     try:
@@ -3115,14 +3116,16 @@ def get_journal_details(request):
     except company_details.DoesNotExist:
         company_name = ''
         address = ''
-    
+
     context = {
         'journal': journal,
         'journal_entries': journal_entries,
         'company_name': company_name,
         'address': address,
     }
-    return render(request, 'journal_details.html',context) 
+
+    # Rest of the view code...
+
 
 def publish_journal(request):
     if request.method == 'POST':
