@@ -86,13 +86,13 @@
         <div class="text-center">
           <div class="left-section">
             <p>Notes:</p>
-            <p>{{ journal.notes }}</p>
-            <p>Reference No: {{ journal.reference_no }}</p>
+            <p>{{ selected_journal.notes }}</p>
+            <p>Reference No: {{ selected_journal.reference_no }}</p>
           </div>
           <div class="right-section">
-            <p>Journal No: {{ journal.journal_no }}</p>
-            <p>Date: {{ journal.date }}</p>
-            <p>Amount: <i class="fa fa-inr"></i>{{ journal.total_credit }}</p>
+            <p>Journal No: {{ selected_journal.journal_no }}</p>
+            <p>Date: {{ selected_journal.date }}</p>
+            <p>Amount: <i class="fa fa-inr"></i>{{ selected_journal.total_credit }}</p>
           </div>
         </div>        
         <hr>
@@ -125,15 +125,15 @@
             <tbody>
               <tr>
                 <td>Total Debit:</td>
-                <td><i class="fa fa-inr"></i>{{ journal.total_debit }}</td>
+                <td><i class="fa fa-inr"></i>{{ selected_journal.total_debit }}</td>
               </tr>
               <tr>
                 <td>Total Credit:</td>
-                <td><i class="fa fa-inr"></i>{{ journal.total_credit }}</td>
+                <td><i class="fa fa-inr"></i>{{ selected_journal.total_credit }}</td>
               </tr>
               <tr>
                 <td>Difference:</td>
-                <td>{{ journal.difference }}</td>
+                <td>{{ selected_journal.difference }}</td>
               </tr>
             </tbody>
           </table>

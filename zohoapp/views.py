@@ -3061,9 +3061,25 @@ def journal_list(request):
             selected_journal = Journal.objects.get(id=journal_id)
             journal_entries = JournalEntry.objects.filter(journal=selected_journal)
         except Journal.DoesNotExist:
-                selected_journal = None
-    
-    return render(request, 'journal_list.html', {'journals': journals, 'selected_journal': selected_journal,'journal_entries': journal_entries})
+            selected_journal = None
+
+    try:
+        company = company_details.objects.get(user=request.user)
+        company_name = company.company_name
+        address = company.address
+    except company_details.DoesNotExist:
+        company_name = ''
+        address = ''
+
+    context = {
+        'journals': journals,
+        'selected_journal': selected_journal,
+        'journal_entries': journal_entries,
+        'company_name': company_name,
+        'address': address,
+    }
+
+    return render(request, 'journal_list.html', context)
 
 def journal_details(request):
     selected_journal_id = request.GET.get('journal_id')
@@ -3106,7 +3122,6 @@ def delete_journal(request, journal_id):
 
 def get_journal_details(request):
     journal_id = request.GET.get('journal_id')
-    print(f"Received journal_id: {journal_id}")
     journal = get_object_or_404(Journal, id=journal_id)
     journal_entries = JournalEntry.objects.filter(journal=journal)
     try:
@@ -3116,16 +3131,14 @@ def get_journal_details(request):
     except company_details.DoesNotExist:
         company_name = ''
         address = ''
-
+    
     context = {
         'journal': journal,
         'journal_entries': journal_entries,
         'company_name': company_name,
         'address': address,
     }
-
-    # Rest of the view code...
-
+    return render(request, 'journal_details.html',context) 
 
 def publish_journal(request):
     if request.method == 'POST':
