@@ -131,6 +131,7 @@ urlpatterns = [
     path('journal_comments/', views.journal_comments, name='journal_comments'),
     # path('add_comment/<int:journal_id>/', views.add_comment, name='add_comment'),
     path('edit_journal/<int:journal_id>/', views.edit_journal, name='edit_journal'),
+    path('edit_journal_view/', views.edit_journal_view, name='edit_journal_view'),
     # path('update_journal/<int:journal_id>/', views.update_journal, name='update_journal'),
     path('journal_details/', views.journal_details, name='journal_details'),
     path('journal/delete/<int:journal_id>/',views.delete_journal, name='delete_journal'),

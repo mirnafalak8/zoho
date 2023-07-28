@@ -1,6 +1,6 @@
 import base64
 from django.shortcuts import render,redirect,get_object_or_404
-from django.http import HttpResponse,HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseNotAllowed, HttpResponseNotFound,HttpResponseRedirect
 from django.contrib import messages
 from django.utils.text import capfirst
 from django.contrib.auth.models import User,auth
@@ -3113,11 +3113,24 @@ def journal_details(request):
         return redirect('journal_list')
 
 
-def delete_journal(request, journal_id):
-    journal = Journal.objects.get(id=journal_id)    
-    journal_entries = JournalEntry.objects.filter(journal=journal)    
-    journal_entries.delete()    
-    journal.delete()    
+# def delete_journal(request, journal_id):
+#     journal = Journal.objects.get(id=journal_id)    
+#     journal_entries = JournalEntry.objects.filter(journal=journal)    
+#     journal_entries.delete()    
+#     journal.delete()    
+#     return redirect('journal_list')
+
+def delete_journal(request):
+    if request.method == 'GET' and 'journal_id' in request.GET:
+        journal_id = request.GET.get('journal_id')
+        try:
+            journal = Journal.objects.get(id=journal_id)
+        except Journal.DoesNotExist:
+            return redirect('journal_list')
+        journal_entries = JournalEntry.objects.filter(journal=journal)
+        journal_entries.delete()
+        journal.delete()
+
     return redirect('journal_list')
 
 def get_journal_details(request):
@@ -3180,22 +3193,6 @@ def journal_comments(request):
         }
 
         return JsonResponse({'comment': comment_data})
-
-# @csrf_exempt
-# def add_comment(request, journal_id):
-#     if request.method == 'POST':
-#         journal = get_object_or_404(Journal, id=journal_id)
-#         comment_text = request.POST.get('comment', '')
-#         user = request.user
-#         comment = JournalComment.objects.create(journal=journal, user=user, text=comment_text)
-#         new_comment = {
-#             'id': comment.id,
-#             'text': comment.text,
-#             'date_time': comment.date_time.strftime('%Y-%m-%d %H:%M:%S'),
-#         }
-#         return JsonResponse({'comment': new_comment})
-#     else:
-#         return JsonResponse({'error': 'Invalid request method'})
     
 def add_comment(request, journal_id):
     if request.method == 'POST':
@@ -3281,6 +3278,14 @@ def edit_journal(request, journal_id):
 
         return redirect('journal_list')
 
+    return render(request, 'edit_journal.html', {'journal': journal, 'accounts': accounts, 'vendors': vendors, 'customers': customers})
+
+def edit_journal_view(request):
+    journal_id = request.GET.get('journal_id')
+    journal = get_object_or_404(Journal, id=journal_id)
+    accounts = Chart_of_Account.objects.all()
+    vendors = vendor_table.objects.all()
+    customers = customer.objects.all()
     return render(request, 'edit_journal.html', {'journal': journal, 'accounts': accounts, 'vendors': vendors, 'customers': customers})
 
 def save_pdf(request):
