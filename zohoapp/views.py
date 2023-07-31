@@ -3017,20 +3017,6 @@ def add_journal(request):
 
     return render(request, 'add_journal.html', {'accounts': accounts, 'vendors': vendors, 'customers': customers})
 
-# def add_account(request):
-#     if request.method == 'POST' and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-#         account_type = request.POST.get('accountType')
-#         account_name = request.POST.get('accountName')
-#         account_code = request.POST.get('accountCode')
-#         description = request.POST.get('description')
-
-#         account = Account(accountType=account_type, accountName=account_name, accountCode=account_code, description=description)
-#         account.save()
-
-#         return JsonResponse({'success': True, 'message': 'Account created successfully.', 'accountName': account.accountName})
-
-#     return JsonResponse({'success': False, 'message': 'Invalid request.'})
-
 def journal_list(request):
     query = request.GET.get('query')
     filter_param = request.GET.get('filter')
@@ -3056,12 +3042,10 @@ def journal_list(request):
     journal_id = request.GET.get('journal_id')
     selected_journal = None
     journal_entries = None
+
     if journal_id:
-        try:
-            selected_journal = Journal.objects.get(id=journal_id)
-            journal_entries = JournalEntry.objects.filter(journal=selected_journal)
-        except Journal.DoesNotExist:
-            selected_journal = None
+        selected_journal = get_object_or_404(Journal, id=journal_id)
+        journal_entries = JournalEntry.objects.filter(journal=selected_journal)
 
     try:
         company = company_details.objects.get(user=request.user)
@@ -3080,6 +3064,49 @@ def journal_list(request):
     }
 
     return render(request, 'journal_list.html', context)
+
+def get_journal_details(request, journal_id):
+    try:
+        selected_journal = Journal.objects.get(id=journal_id)
+        journal_entries = JournalEntry.objects.filter(journal=selected_journal)
+
+        # Fetch the company_details related to the authenticated user
+        try:
+            company = company_details.objects.get(user=request.user)
+            company_name = company.company_name
+            address = company.address
+        except company_details.DoesNotExist:
+            company_name = ''
+            address = ''
+
+        # Convert data to dictionary
+        data = {
+            'company_name': company_name,
+            'address': address,
+            'selected_journal': {
+                'notes': selected_journal.notes,
+                'reference_no': selected_journal.reference_no,
+                'journal_no': selected_journal.journal_no,
+                'date': selected_journal.date,
+                'total_credit': selected_journal.total_credit,
+                'total_debit': selected_journal.total_debit,
+                'difference': selected_journal.difference,
+            },
+            'journal_entries': [
+                {
+                    'account': entry.account,
+                    'description': entry.description,
+                    'contact': entry.contact,
+                    'debits': entry.debits,
+                    'credits': entry.credits,
+                }
+                for entry in journal_entries
+            ],
+        }
+
+        return JsonResponse(data)
+    except Journal.DoesNotExist:
+        return JsonResponse({'error': 'Journal not found'}, status=404)
 
 def journal_details(request):
     selected_journal_id = request.GET.get('journal_id')
@@ -3120,38 +3147,42 @@ def journal_details(request):
 #     journal.delete()    
 #     return redirect('journal_list')
 
-def delete_journal(request):
-    if request.method == 'GET' and 'journal_id' in request.GET:
-        journal_id = request.GET.get('journal_id')
-        try:
-            journal = Journal.objects.get(id=journal_id)
-        except Journal.DoesNotExist:
-            return redirect('journal_list')
-        journal_entries = JournalEntry.objects.filter(journal=journal)
-        journal_entries.delete()
-        journal.delete()
-
+def delete_journal(request, journal_id):
+    journal = get_object_or_404(Journal, id=journal_id)
+    journal.delete()
     return redirect('journal_list')
 
-def get_journal_details(request):
-    journal_id = request.GET.get('journal_id')
-    journal = get_object_or_404(Journal, id=journal_id)
-    journal_entries = JournalEntry.objects.filter(journal=journal)
-    try:
-        company = company_details.objects.get(user=request.user)
-        company_name = company.company_name
-        address = company.address
-    except company_details.DoesNotExist:
-        company_name = ''
-        address = ''
+# def delete_journal(request):
+#     if request.method == 'GET' and 'journal_id' in request.GET:
+#         journal_id = request.GET.get('journal_id')
+#         try:
+#             journal = Journal.objects.get(id=journal_id)
+#         except Journal.DoesNotExist:
+#             return redirect('journal_list')
+#         journal_entries = JournalEntry.objects.filter(journal=journal)
+#         journal_entries.delete()
+#         journal.delete()
+#     return redirect('journal_list')
+
+# def get_journal_details(request):
+#     journal_id = request.GET.get('journal_id')
+#     journal = get_object_or_404(Journal, id=journal_id)
+#     journal_entries = JournalEntry.objects.filter(journal=journal)
+#     try:
+#         company = company_details.objects.get(user=request.user)
+#         company_name = company.company_name
+#         address = company.address
+#     except company_details.DoesNotExist:
+#         company_name = ''
+#         address = ''
     
-    context = {
-        'journal': journal,
-        'journal_entries': journal_entries,
-        'company_name': company_name,
-        'address': address,
-    }
-    return render(request, 'journal_details.html',context) 
+#     context = {
+#         'journal': journal,
+#         'journal_entries': journal_entries,
+#         'company_name': company_name,
+#         'address': address,
+#     }
+#     return render(request, 'journal_details.html',context) 
 
 def publish_journal(request):
     if request.method == 'POST':
