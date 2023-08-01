@@ -125,6 +125,7 @@ urlpatterns = [
     path('journal_list/', views.journal_list, name='journal_list'),
     # path('get_journal_details/', views.get_journal_details, name='get_journal_details'),
     path('get_journal_details/<int:journal_id>/', views.get_journal_details, name='get_journal_details'),
+    path('get_journal_details_for_overview/<int:journal_id>/', views.get_journal_details_for_overview, name='get_journal_details_for_overview'),
     # path('journal_template/', views.journal_template, name='journal_template'),
     path('publish_journal/', views.publish_journal, name='publish_journal'),
     path('add_comment/<int:journal_id>/', views.add_comment, name='add_comment'),

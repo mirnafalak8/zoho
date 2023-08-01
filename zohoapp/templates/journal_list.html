@@ -49,12 +49,14 @@
     padding: 20px 0 20px 10px;
     border-radius: 10px;
   }
+
   footer {
     margin-top: 40px;
     width: 100%;
     height: auto;
     padding: 20px;
   }
+
   .text-center {
     display: flex;
     justify-content: space-between;
@@ -67,7 +69,12 @@
   .right-section {
     text-align: right;
   }
-  
+
+  .list-item.active {
+    border: 1px solid #F86F03;
+    border-radius: 5px;
+    padding: 5px;
+  }
 </style>
 <section>
   <div class="row" style="top: 7rem;">
@@ -104,7 +111,8 @@
 
         <div class="list-group mt-3">
           {% for journal in journals %}
-          <a href="#" class="list-item" data-journal-id="{{ journal.id }}">
+          <a href="#" class="list-item {% if selected_journal_id == journal.id %}active{% endif %}"
+            data-journal-id="{{ journal.id }}">
             <div class="d-flex justify-content-between text-white">
               <span>{{ journal.date }}</span>
               <span><i class="fa fa-inr"></i>{{ journal.total_debit }}</span>
@@ -125,9 +133,9 @@
       </div>
       <div class="col-md-7">
         <div class="d-flex justify-content-between align-items-center">
-          <button class="btn btn-success">Publish</button>
+          <button class="btn btn-success btn-publish">Publish</button>
           <button class="btn btn-primary btn-overview">Overview</button>
-          <button class="btn btn-primary">Template</button>
+          <button class="btn btn-primary btn-template">Template</button>
           <button class="btn btn-primary"><i class="fa fa-comments" aria-hidden="true"></i>
             <button class="btn btn-primary"><i class="fa fa-edit" aria-hidden="true"></i></button>
             <button class="btn btn-primary"><i class="fa fa-file-pdf" aria-hidden="true"></i></button>
@@ -135,10 +143,12 @@
             <button class="btn btn-primary"><i class="fa fa-file" aria-hidden="true"></i></button>
             <button class="btn btn-danger"><i class="fa fa-trash" aria-hidden="true"></i></button>
         </div>
-        <!-- Content -->
-        <div class="details-section mt-4">
-          <!-- Your content for the right section goes here -->
-          <div class="overview-section" style="display: none;">
+        <div class="">
+          <!-- ... Existing content ... -->
+          <div class="details-section mt-4">
+            <!-- Content for the right section goes here -->
+          </div>
+          <div class="overview-section mt-4" style="display: none;">
             <!-- Content for the overview section (populated when "Overview" button is clicked) -->
             <!-- The content will be loaded dynamically using JavaScript when the button is clicked. -->
           </div>
@@ -148,23 +158,22 @@
   </div>
 </section>
 <script>
-  // jQuery script to handle click event and load journal details
   $(document).ready(function () {
-    $('.list-item').click(function (event) {
-      event.preventDefault();
-      const journalId = $(this).data('journal-id');
+    // $('.list-item').click(function (event) {
+    //   event.preventDefault();
+    //   const journalId = $(this).data('journal-id');
+    //   const detailsSection = $('.details-section');
+    function loadJournalDetails(journalId) {
       const detailsSection = $('.details-section');
+      console.log('Journal ID:', journalId); // Add this line for debugging
 
-      // Fetch journal and journal entries details using AJAX
       $.ajax({
-        url: `/get_journal_details/${journalId}/`, // Replace with your Django URL
+        url: `/get_journal_details/${journalId}/`,
         method: 'GET',
         dataType: 'json',
         success: function (data) {
-          // Clear the details-section first
           detailsSection.empty();
 
-          // Display the journal details
           detailsSection.append(`
                       <div class="container-fluid bg-white text-dark">
                           <br><br>
@@ -244,76 +253,154 @@
           console.error('Error fetching journal details:', error);
         }
       });
-    });
-    $('.btn-overview').click(function () {
-      // Show the overview section and hide the journal details section
-      $('.overview-section').show();
-      const overviewTemplate = `
-        <div class="container-fluid bg-light text-dark">
-          <br><br>
-  <div class="row justify-content-center">
-    <div class="col-md-9">
-      <h2 class="left-align text-primary">${data.company_name}</h2>
-      <p class="left-align text-secondary">${data.address}</p>
-      <hr class="bg-primary">
-      <div class="text-center">
-        <div class="row">
-          <div class="col-md-6">
-            <div class="card bg-info text-white">
-              <div class="card-body">
-                <p><strong>Notes:</strong></p>
-                <p>${data.selected_journal.notes}</p>
-                <p><strong>Reference No:</strong> ${data.selected_journal.reference_no}</p>
-              </div>
-            </div>
-          </div>
-          <div class="col-md-6">
-            <div class="card bg-info text-white">
-              <div class="card-body">
-                <p><strong>Journal No:</strong> ${data.selected_journal.journal_no}</p>
-                <p><strong>Date:</strong> ${data.selected_journal.date}</p>
-                <p><strong>Amount:</strong> <i class="fa fa-inr"></i>${data.selected_journal.total_credit}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <hr class="bg-primary">
-      <div class="row">
-        <div class="col-md-12">
-          <h4 class="text-primary">Journal Entries</h4>
-          ${data.journal_entries.map(entry => `
-            <div class="entry card bg-primary text-white">
-              <div class="card-body">
-                <p><strong>Account Name:</strong> ${entry.account}</p>
-                <p><strong>Description:</strong> ${entry.description}</p>
-                <p><strong>Contact:</strong> ${entry.contact}</p>
-                <p><strong>Debits:</strong> ${entry.debits}</p>
-                <p><strong>Credits:</strong> ${entry.credits}</p>
-              </div>
-            </div>
-          `).join('')}
-        </div>
-      </div>
-      <div class="text-center">
-        <hr class="bg-primary">
-        <p class="text-success"><strong>Total Debit:</strong> <i class="fa fa-inr"></i>${data.selected_journal.total_debit}</p>
-        <p class="text-success"><strong>Total Credit:</strong> <i class="fa fa-inr"></i>${data.selected_journal.total_credit}</p>
-        <p class="text-success"><strong>Difference:</strong> ${data.selected_journal.difference}</p>
-      </div>
-    </div>
-  </div>
-  <footer>
-    <h5 class="text-center text-muted" style="font-size: 12px;">
-      © Zoho Books 2023 | Info park kakkanad kochi, Ernamkulam, kerala India 12345 |
-      Phone: (123) 456-7890 | Email: info@zohodjango.com
-    </h5>
-  </footer>
-  </div>
-      `;
+    }
+    const selectedJournalId = localStorage.getItem('selectedJournalId');
 
-      // Insert the overview content into the overview section
-      $('.overview-section').html(overviewTemplate);
+    if (selectedJournalId) {
+      loadJournalDetails(selectedJournalId);
+    }
+
+    $('.list-item').click(function (event) {
+      event.preventDefault();
+      const journalId = $(this).data('journal-id');
+      $('.list-item').removeClass('active');
+      $(this).addClass('active');
+
+      loadJournalDetails(journalId);
+      localStorage.setItem('selectedJournalId', journalId);
+
+
+    });
+
+    $('.btn-overview').click(function () {
+      const selectedJournalId = $('.list-item.active').data('journal-id');
+      console.log(selectedJournalId);
+      if (selectedJournalId) {
+        loadJournalDetails(selectedJournalId);
+
+        $.ajax({
+          url: `/get_journal_details_for_overview/${selectedJournalId}/`,
+          method: 'GET',
+          dataType: 'json',
+          success: function (data) {
+            const overviewContent = `
+      <div class="container-fluid bg-light text-dark">
+        <br><br>
+        <div class="row justify-content-center">
+          <div class="col-md-9">
+            <h2 class="left-align text-primary">${data.company_name}</h2>
+            <p class="left-align text-secondary">${data.address}</p>
+            <hr class="bg-primary">
+            <div class="text-center">
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="card bg-info text-white">
+                    <div class="card-body">
+                      <p><strong>Notes:</strong></p>
+                      <p>${data.selected_journal.notes}</p>
+                      <p><strong>Reference No:</strong> ${data.selected_journal.reference_no}</p>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="card bg-info text-white">
+                    <div class="card-body">
+                      <p><strong>Journal No:</strong> ${data.selected_journal.journal_no}</p>
+                      <p><strong>Date:</strong> ${data.selected_journal.date}</p>
+                      <p><strong>Amount:</strong> <i class="fa fa-inr"></i>${data.selected_journal.total_credit}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <hr class="bg-primary">
+            <div class="row">
+              <div class="col-md-12">
+                <h4 class="text-primary">Journal Entries</h4>
+                ${data.journal_entries.map(entry => `
+                  <div class="entry card bg-primary text-white">
+                    <div class="card-body">
+                      <p><strong>Account Name:</strong> ${entry.account}</p>
+                      <p><strong>Description:</strong> ${entry.description}</p>
+                      <p><strong>Contact:</strong> ${entry.contact}</p>
+                      <p><strong>Debits:</strong> ${entry.debits}</p>
+                      <p><strong>Credits:</strong> ${entry.credits}</p>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+            <div class="text-center">
+              <hr class="bg-primary">
+              <p class="text-success"><strong>Total Debit:</strong> <i class="fa fa-inr"></i>${data.selected_journal.total_debit}</p>
+              <p class="text-success"><strong>Total Credit:</strong> <i class="fa fa-inr"></i>${data.selected_journal.total_credit}</p>
+              <p class="text-success"><strong>Difference:</strong> ${data.selected_journal.difference}</p>
+            </div>
+          </div>
+        </div>
+        <footer>
+          <h5 class="text-center text-muted" style="font-size: 12px;">
+            © Zoho Books 2023 | Info park kakkanad kochi, Ernamkulam, kerala India 12345 |
+            Phone: (123) 456-7890 | Email: info@zohodjango.com
+          </h5>
+        </footer>
+      </div>
+      <br><br>
+    `;
+
+            $('.details-section').hide();
+            $('.overview-section').html(overviewContent);
+            $('.overview-section').show();
+          },
+          error: function (error) {
+            console.error('Error fetching journal details for overview:', error);
+          }
+        });
+      } else {
+        console.error('No journal item selected for overview.');
+      }
+
+      $('.btn-template').click(function () {
+        const selectedJournalId = $('.list-item.active').data('journal-id');
+        console.log(selectedJournalId);
+        if (selectedJournalId) {
+          loadJournalDetails(selectedJournalId);
+          $('.overview-section').hide();
+          $('.details-section').show();
+        } else {
+          console.error('No journal item selected for template.');
+        }
+      });
+      $('.btn-publish').click(function () {
+      var journalId = $('.list-item.active').data('journal-id');
+      console.log('Journal ID to publish:', journalId);
+
+      var publishUrl = "{% url 'publish_journal' %}";
+      var csrfToken = "{{ csrf_token }}";
+
+      $.ajax({
+        url: publishUrl,
+        method: 'POST',
+        headers: {
+          "X-CSRFToken": csrfToken
+        },
+        data: {
+          journal_id: journalId,
+        },
+        success: function (response) {
+          console.log('Publish successful! Response:', response);
+
+          // Update the UI to show the journal status as "Published"
+          $('.details-section .status').text('Published');
+          $('.list-item.active .status').text('Published');
+        },
+        error: function (error) {
+          console.error('Error publishing journal:', error);
+        }
+      });
+    });
+
+
     });
   });
 </script>

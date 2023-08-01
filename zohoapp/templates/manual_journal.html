@@ -96,7 +96,7 @@
         </table>
     </div>
 </section>
-<script>
+<!-- <script>
     $(document).ready(function() {
       $('[data-toggle="tooltip"]').tooltip();
   
@@ -105,5 +105,16 @@
         window.location.href = "{% url 'journal_list' %}?journal_id=" + journalId;
       });
     });
-  </script>
+  </script> -->
+  <script>
+    $(document).ready(function() {
+      $('[data-toggle="tooltip"]').tooltip();
+  
+      $('.journal-row').click(function() {
+        var journalId = $(this).data('journal-id');
+        localStorage.setItem('selectedJournalId', journalId); 
+        window.location.href = "{% url 'journal_list' %}";
+      });
+    });
+</script>
 {% endblock %}

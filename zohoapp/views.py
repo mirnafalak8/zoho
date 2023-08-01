@@ -3107,6 +3107,47 @@ def get_journal_details(request, journal_id):
         return JsonResponse(data)
     except Journal.DoesNotExist:
         return JsonResponse({'error': 'Journal not found'}, status=404)
+    
+def get_journal_details_for_overview(request, journal_id):
+    try:
+        selected_journal = Journal.objects.get(id=journal_id)
+        journal_entries = JournalEntry.objects.filter(journal=selected_journal)
+
+        try:
+            company = company_details.objects.get(user=request.user)
+            company_name = company.company_name
+            address = company.address
+        except company_details.DoesNotExist:
+            company_name = ''
+            address = ''
+
+        data = {
+            'company_name': company_name,
+            'address': address,
+            'selected_journal': {
+                'notes': selected_journal.notes,
+                'reference_no': selected_journal.reference_no,
+                'journal_no': selected_journal.journal_no,
+                'date': selected_journal.date,
+                'total_credit': selected_journal.total_credit,
+                'total_debit': selected_journal.total_debit,
+                'difference': selected_journal.difference,
+            },
+            'journal_entries': [
+                {
+                    'account': entry.account,
+                    'description': entry.description,
+                    'contact': entry.contact,
+                    'debits': entry.debits,
+                    'credits': entry.credits,
+                }
+                for entry in journal_entries
+            ],
+        }
+
+        return JsonResponse(data)
+    except Journal.DoesNotExist:
+        return JsonResponse({'error': 'Journal not found'}, status=404)
 
 def journal_details(request):
     selected_journal_id = request.GET.get('journal_id')
@@ -3184,16 +3225,33 @@ def delete_journal(request, journal_id):
 #     }
 #     return render(request, 'journal_details.html',context) 
 
+# @csrf_exempt
+# def publish_journal(request):
+#     if request.method == 'POST':
+#         journal_id = request.POST.get('journal_id')
+#         journal = get_object_or_404(Journal, id=journal_id)
+#         journal.status = 'published'
+#         journal.save()
+#         return JsonResponse({'status': 'success'})
+#     else:
+#         return JsonResponse({'status': 'error'})
+    
 def publish_journal(request):
     if request.method == 'POST':
         journal_id = request.POST.get('journal_id')
         journal = get_object_or_404(Journal, id=journal_id)
+
+        print("Initial Journal Status:", journal.status)
+
         journal.status = 'published'
         journal.save()
+        print("Updated Journal Status:", journal.status)
+
         return JsonResponse({'status': 'success'})
     else:
         return JsonResponse({'status': 'error'})
-    
+
+
 @csrf_exempt
 def journal_comments(request):
     if request.method == 'GET':
