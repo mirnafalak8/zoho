@@ -1,4 +1,5 @@
 import base64
+from io import BytesIO
 from django.shortcuts import render,redirect,get_object_or_404
 from django.http import HttpResponse, HttpResponseNotAllowed, HttpResponseNotFound,HttpResponseRedirect
 from django.contrib import messages
@@ -14,7 +15,10 @@ from django.core.mail import EmailMessage
 from django.views import View
 from .forms import EmailForm
 from django.http import JsonResponse
+from django.views.decorators.http import require_POST
 import json
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
 from django.views.decorators.csrf import csrf_exempt
 from django.urls import reverse
 
@@ -3128,6 +3132,7 @@ def get_journal_details_for_overview(request, journal_id):
                 'notes': selected_journal.notes,
                 'reference_no': selected_journal.reference_no,
                 'journal_no': selected_journal.journal_no,
+                'status': selected_journal.status,
                 'date': selected_journal.date,
                 'total_credit': selected_journal.total_credit,
                 'total_debit': selected_journal.total_debit,
@@ -3149,36 +3154,95 @@ def get_journal_details_for_overview(request, journal_id):
     except Journal.DoesNotExist:
         return JsonResponse({'error': 'Journal not found'}, status=404)
 
-def journal_details(request):
-    selected_journal_id = request.GET.get('journal_id')
-    selected_journal = None
-    if selected_journal_id:
+def update_journal_status(request, journal_id):
+    if request.method == 'POST':
         try:
-            selected_journal = Journal.objects.get(id=selected_journal_id)
+            selected_journal = Journal.objects.get(id=journal_id)
+            selected_journal.status = 'published'
+            selected_journal.save()
+
+            return JsonResponse({'message': 'Journal status updated successfully.'})
         except Journal.DoesNotExist:
-            selected_journal = None
-
-    if selected_journal:
-        journal_entries = JournalEntry.objects.filter(journal=selected_journal)
-
-        try:
-            company = company_details.objects.get(user=request.user)
-            company_name = company.company_name
-            address = company.address
-        except company_details.DoesNotExist:
-            company_name = ''
-            address = ''
-
-        context = {
-            'selected_journal': selected_journal,
-            'journal_entries': journal_entries,
-            'company_name': company_name,
-            'address': address,
-        }   
-
-        return render(request, 'journal_template.html', context)
+            return JsonResponse({'error': 'Journal not found'}, status=404)
     else:
-        return redirect('journal_list')
+        return JsonResponse({'error': 'Invalid request method'}, status=400)
+    
+def get_journal_comments(request, journal_id):
+    journal = get_object_or_404(Journal, id=journal_id)
+    comments = journal.comments.all()
+    is_current_user_comment = False
+    if request.user.is_authenticated:
+        is_current_user_comment = comments.filter(user=request.user).exists()
+
+    comments_data = [{
+        'id': comment.id,
+        'text': comment.text,
+        'user': comment.user.username,
+        'date_time': comment.date_time.strftime('%Y-%m-%d %H:%M:%S'),
+    } for comment in comments]
+
+    return JsonResponse({
+        'comments': comments_data,
+        'is_current_user_comment': is_current_user_comment,
+    })
+
+def save_journal_comment(request, journal_id):
+    if request.method == 'POST':
+        journal = get_object_or_404(Journal, id=journal_id)
+        comment_text = request.POST.get('text')
+        
+        if comment_text:
+            JournalComment.objects.create(
+                journal=journal,
+                user=request.user,
+                text=comment_text,
+            )
+            
+            return JsonResponse({'message': 'Comment saved successfully.'})
+    
+    return JsonResponse({'error': 'Invalid request.'}, status=400)
+
+def delete_journal_comment(request, comment_id):
+    if request.method == 'POST':
+        comment = get_object_or_404(JournalComment, id=comment_id)
+        if request.user == comment.user:
+            comment.delete()
+            return JsonResponse({'message': 'Comment deleted successfully.'})
+        else:
+            return JsonResponse({'error': 'Permission denied.'}, status=403)
+    
+    return JsonResponse({'error': 'Invalid request.'}, status=400)
+
+# def journal_details(request):
+#     selected_journal_id = request.GET.get('journal_id')
+#     selected_journal = None
+#     if selected_journal_id:
+#         try:
+#             selected_journal = Journal.objects.get(id=selected_journal_id)
+#         except Journal.DoesNotExist:
+#             selected_journal = None
+
+#     if selected_journal:
+#         journal_entries = JournalEntry.objects.filter(journal=selected_journal)
+
+#         try:
+#             company = company_details.objects.get(user=request.user)
+#             company_name = company.company_name
+#             address = company.address
+#         except company_details.DoesNotExist:
+#             company_name = ''
+#             address = ''
+
+#         context = {
+#             'selected_journal': selected_journal,
+#             'journal_entries': journal_entries,
+#             'company_name': company_name,
+#             'address': address,
+#         }   
+
+#         return render(request, 'journal_template.html', context)
+#     else:
+#         return redirect('journal_list')
 
 
 # def delete_journal(request, journal_id):
@@ -3188,10 +3252,21 @@ def journal_details(request):
 #     journal.delete()    
 #     return redirect('journal_list')
 
+@require_POST
 def delete_journal(request, journal_id):
-    journal = get_object_or_404(Journal, id=journal_id)
-    journal.delete()
-    return redirect('journal_list')
+    try:
+        journal = Journal.objects.get(id=journal_id)
+        journal_entries = JournalEntry.objects.filter(journal=journal)
+        journal_entries.delete()
+        journal.delete()
+        return JsonResponse({'message': 'Journal deleted successfully.'})
+    except Journal.DoesNotExist:
+        return JsonResponse({'message': 'Journal not found.'})
+
+# def delete_journal(request, journal_id):
+#     journal = get_object_or_404(Journal, id=journal_id)
+#     journal.delete()
+#     return redirect('journal_list')
 
 # def delete_journal(request):
 #     if request.method == 'GET' and 'journal_id' in request.GET:
@@ -3236,67 +3311,67 @@ def delete_journal(request, journal_id):
 #     else:
 #         return JsonResponse({'status': 'error'})
     
-def publish_journal(request):
-    if request.method == 'POST':
-        journal_id = request.POST.get('journal_id')
-        journal = get_object_or_404(Journal, id=journal_id)
+# def publish_journal(request):
+#     if request.method == 'POST':
+#         journal_id = request.POST.get('journal_id')
+#         journal = get_object_or_404(Journal, id=journal_id)
 
-        print("Initial Journal Status:", journal.status)
+#         print("Initial Journal Status:", journal.status)
 
-        journal.status = 'published'
-        journal.save()
-        print("Updated Journal Status:", journal.status)
+#         journal.status = 'published'
+#         journal.save()
+#         print("Updated Journal Status:", journal.status)
 
-        return JsonResponse({'status': 'success'})
-    else:
-        return JsonResponse({'status': 'error'})
+#         return JsonResponse({'status': 'success'})
+#     else:
+#         return JsonResponse({'status': 'error'})
 
 
-@csrf_exempt
-def journal_comments(request):
-    if request.method == 'GET':
-        journal_id = request.GET.get('journal_id')
-        comments = JournalComment.objects.filter(journal_id=journal_id).order_by('-date_time')
-        comment_list = []
-        for comment in comments:
-            comment_data = {
-                'text': comment.text,
-                'date_time': comment.date_time.strftime('%Y-%m-%d %H:%M:%S')
-            }
-            comment_list.append(comment_data)
-        return JsonResponse({'comments': comment_list})
+# @csrf_exempt
+# def journal_comments(request):
+#     if request.method == 'GET':
+#         journal_id = request.GET.get('journal_id')
+#         comments = JournalComment.objects.filter(journal_id=journal_id).order_by('-date_time')
+#         comment_list = []
+#         for comment in comments:
+#             comment_data = {
+#                 'text': comment.text,
+#                 'date_time': comment.date_time.strftime('%Y-%m-%d %H:%M:%S')
+#             }
+#             comment_list.append(comment_data)
+#         return JsonResponse({'comments': comment_list})
 
-    elif request.method == 'POST':
-        journal_id = request.POST.get('journal_id')
-        comment_text = request.POST.get('comment')
+#     elif request.method == 'POST':
+#         journal_id = request.POST.get('journal_id')
+#         comment_text = request.POST.get('comment')
 
-        journal = Journal.objects.get(id=journal_id)
-        user = request.user
+#         journal = Journal.objects.get(id=journal_id)
+#         user = request.user
 
-        comment = JournalComment(journal=journal, user=user, text=comment_text)
-        comment.save()
+#         comment = JournalComment(journal=journal, user=user, text=comment_text)
+#         comment.save()
 
-        comment_data = {
-            'text': comment.text,
-            'date_time': comment.date_time.strftime('%Y-%m-%d %H:%M:%S')
-        }
+#         comment_data = {
+#             'text': comment.text,
+#             'date_time': comment.date_time.strftime('%Y-%m-%d %H:%M:%S')
+#         }
 
-        return JsonResponse({'comment': comment_data})
+#         return JsonResponse({'comment': comment_data})
     
-def add_comment(request, journal_id):
-    if request.method == 'POST':
-        comment_text = request.POST.get('comment')
-        journal = get_object_or_404(Journal, id=journal_id)
-        comment = JournalComment(journal=journal, text=comment_text)
-        comment.save()
-        return JsonResponse({'status': 'success', 'date_time': comment.date_time})
-    else:
-        return JsonResponse({'status': 'error'})
+# def add_comment(request, journal_id):
+#     if request.method == 'POST':
+#         comment_text = request.POST.get('comment')
+#         journal = get_object_or_404(Journal, id=journal_id)
+#         comment = JournalComment(journal=journal, text=comment_text)
+#         comment.save()
+#         return JsonResponse({'status': 'success', 'date_time': comment.date_time})
+#     else:
+#         return JsonResponse({'status': 'error'})
     
-def get_comments(request, journal_id):
-    journal = get_object_or_404(Journal, id=journal_id)
-    comments = journal.comments.filter(active=True) 
-    return render(request, 'journal_comments.html', {'comments': comments})
+# def get_comments(request, journal_id):
+#     journal = get_object_or_404(Journal, id=journal_id)
+#     comments = journal.comments.filter(active=True) 
+#     return render(request, 'journal_comments.html', {'comments': comments})
     
 def edit_journal(request, journal_id):
     journal = get_object_or_404(Journal, id=journal_id)
@@ -3369,14 +3444,6 @@ def edit_journal(request, journal_id):
 
     return render(request, 'edit_journal.html', {'journal': journal, 'accounts': accounts, 'vendors': vendors, 'customers': customers})
 
-def edit_journal_view(request):
-    journal_id = request.GET.get('journal_id')
-    journal = get_object_or_404(Journal, id=journal_id)
-    accounts = Chart_of_Account.objects.all()
-    vendors = vendor_table.objects.all()
-    customers = customer.objects.all()
-    return render(request, 'edit_journal.html', {'journal': journal, 'accounts': accounts, 'vendors': vendors, 'customers': customers})
-
 def save_pdf(request):
     if request.method == 'POST':
         pdf_data = request.POST.get('pdf_data')
@@ -3391,3 +3458,4 @@ def save_pdf(request):
             return response
 
     return HttpResponse('Invalid request method')
+

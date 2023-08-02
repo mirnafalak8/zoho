@@ -315,7 +315,7 @@ tr:hover{
                         <div class="col-md-6">
                             <label for="">Attach File(s):</label>
                             <div class="form-group">
-                                <input type="file" name="attachment" class="form-control-file">
+                                <input type="file" name="attachment" class="form-control-file text-light">
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -329,12 +329,12 @@ tr:hover{
                                 </thead>
                                 <tbody>
                                     <tr>
-                                        <td>Total Amount</td>
+                                        <td class="text-light">Total Amount</td>
                                         <td><input type="number" class="form-control" id="totalDebit" placeholder="0" value="{{ journal.total_debit }}"></td>
                                         <td><input type="number" class="form-control" id="totalCredit" placeholder="0" value="{{ journal.total_credit }}"></td>
                                     </tr>
                                     <tr>
-                                        <td>Difference</td>
+                                        <td class="text-light">Difference</td>
                                         <td><input type="number" class="form-control" id="debitDifference" placeholder="0" value="{{ journal.difference }}"></td>
                                         <td><input type="number" class="form-control" id="creditDifference" placeholder="0"></td>
                                     </tr>

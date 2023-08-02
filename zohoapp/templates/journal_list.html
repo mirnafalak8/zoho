@@ -136,12 +136,12 @@
           <button class="btn btn-success btn-publish">Publish</button>
           <button class="btn btn-primary btn-overview">Overview</button>
           <button class="btn btn-primary btn-template">Template</button>
-          <button class="btn btn-primary"><i class="fa fa-comments" aria-hidden="true"></i>
-            <button class="btn btn-primary"><i class="fa fa-edit" aria-hidden="true"></i></button>
-            <button class="btn btn-primary"><i class="fa fa-file-pdf" aria-hidden="true"></i></button>
-            <button class="btn btn-primary"><i class="fa fa-print" aria-hidden="true"></i></button>
-            <button class="btn btn-primary"><i class="fa fa-file" aria-hidden="true"></i></button>
-            <button class="btn btn-danger"><i class="fa fa-trash" aria-hidden="true"></i></button>
+          <button class="btn btn-primary btn-comment" data-toggle="modal" data-target="#commentModal"><i class="fa fa-comments" aria-hidden="true"></i>
+          <button class="btn btn-primary btn-edit"><i class="fa fa-edit" aria-hidden="true"></i></button>
+          <button class="btn btn-primary btn-save-pdf"><i class="fa fa-file-pdf" aria-hidden="true"></i></button>
+          <button class="btn btn-primary"><i class="fa fa-print" aria-hidden="true"></i></button>
+          <button class="btn btn-primary"><i class="fa fa-paperclip" aria-hidden="true"></i></button>
+          <button class="btn btn-danger btn-delete"><i class="fa fa-trash" aria-hidden="true"></i></button>
         </div>
         <div class="">
           <!-- ... Existing content ... -->
@@ -157,6 +157,36 @@
     </div>
   </div>
 </section>
+<div class="modal fade" id="commentModal" tabindex="-1" role="dialog" aria-labelledby="commentModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content bg-dark text-white">
+      <div class="modal-header">
+        <h5 class="modal-title" id="commentModalLabel">Comments</h5>
+        <button type="button" class="close text-light" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <!-- Existing comments -->
+        <div class="existing-comments">
+          <!-- Comments will be dynamically added here using JavaScript -->
+        </div>
+
+        <!-- New comment entry field -->
+        <div class="form-group">
+          <label for="commentText">Add a Comment:</label>
+          <textarea class="form-control bg-dark" id="commentText" rows="3"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <!-- <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button> -->
+        <button type="button" class="btn btn-primary btn-save-comment">Save Comment</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
 <script>
   $(document).ready(function () {
     // $('.list-item').click(function (event) {
@@ -175,7 +205,7 @@
           detailsSection.empty();
 
           detailsSection.append(`
-                      <div class="container-fluid bg-white text-dark">
+                      <div class="container-fluid bg-white text-dark" id="container">
                           <br><br>
                           <div class="row justify-content-center">
                               <div class="col-md-9">
@@ -253,6 +283,8 @@
           console.error('Error fetching journal details:', error);
         }
       });
+      $('.list-item').removeClass('active');
+      $(`.list-item[data-journal-id="${journalId}"]`).addClass('active');
     }
     const selectedJournalId = localStorage.getItem('selectedJournalId');
 
@@ -269,8 +301,188 @@
       loadJournalDetails(journalId);
       localStorage.setItem('selectedJournalId', journalId);
 
-
     });
+
+    function updateJournalStatus(journalId) {
+      $.ajax({
+        url: `/update_journal_status/${journalId}/`,
+        method: 'POST',
+        dataType: 'json',
+        data: {
+          csrfmiddlewaretoken: '{{ csrf_token }}',
+        },
+        success: function (data) {
+          location.reload();
+        },
+        error: function (error) {
+          console.error('Error updating journal status:', error);
+        }
+      });
+    }
+
+    // Add click event listener for the "Publish" button
+    $('.btn-publish').click(function () {
+      const selectedJournalId = $('.list-item.active').data('journal-id');
+      if (selectedJournalId) {
+        updateJournalStatus(selectedJournalId);
+      } else {
+        console.error('No journal item selected for publishing.');
+      }
+    });
+
+    $(document).on('click', '.btn-comment', function () {
+  const selectedJournalId = $('.list-item.active').data('journal-id');
+
+  if (selectedJournalId) {
+    // AJAX call to retrieve existing comments for the selected journal
+    $.ajax({
+      url: `/get_journal_comments/${selectedJournalId}/`,
+      method: 'GET',
+      dataType: 'json',
+      success: function (data) {
+    const commentModal = $('#commentModal');
+    const existingCommentsSection = commentModal.find('.existing-comments');
+    existingCommentsSection.empty();
+
+        let commentCounter = 1;
+        data.comments.forEach(comment => {
+          const deleteButton = data.is_current_user_comment ? `<button class="btn btn-sm btn-danger m-1 btn-delete-comment" data-comment-id="${comment.id}"><i class="fa fa-trash"></i></button>` : '';
+          const commentHtml = `
+            <div class="comment d-flex justify-content-between">
+              <div class="d-flex">
+              <div class="comment-number">${commentCounter}.</div>
+              <div class="comment-text ml-4">${comment.text}</div>
+            </div>
+              <div class="d-flex">
+                <p class="comment-info m-2">${comment.date_time}</p>
+                ${deleteButton}
+              </div>
+            </div>
+          `;
+          existingCommentsSection.append(commentHtml);
+          commentCounter++;
+        });
+
+        // Open the comment modal
+        commentModal.modal('show');
+      },
+      error: function (error) {
+        console.error('Error fetching existing comments:', error);
+      }
+    });
+  } else {
+    console.error('No journal item selected for adding a comment.');
+  }
+});
+
+    // Handler for the "Save Comment" button click
+    $(document).on('click', '.btn-save-comment', function () {
+      const commentText = $('#commentText').val();
+      const selectedJournalId = $('.list-item.active').data('journal-id');
+
+      if (selectedJournalId) {
+        // AJAX call to save the new comment
+        $.ajax({
+          url: `/save_journal_comment/${selectedJournalId}/`,
+          method: 'POST',
+          dataType: 'json',
+          data: {
+            csrfmiddlewaretoken: '{{ csrf_token }}',
+            text: commentText,
+          },
+          success: function () {
+            // After saving the comment, reload the journal details section to show the new comment
+            loadJournalDetails(selectedJournalId);
+            console.log('Comment saved successfully.');
+            // Close the comment modal
+            $('#commentModal').modal('hide');
+            $('#commentText').val('');
+          },
+          error: function (error) {
+            console.error('Error saving the comment:', error);
+          }
+        });
+      } else {
+        console.error('No journal item selected for adding a comment.');
+      }
+    });
+
+    // Handler for the "Delete Comment" button click
+    $(document).on('click', '.btn-delete-comment', function () {
+      const commentId = $(this).data('comment-id');
+      const selectedJournalId = $('.list-item.active').data('journal-id');
+
+      if (selectedJournalId) {
+        // AJAX call to delete the comment
+        $.ajax({
+          url: `/delete_journal_comment/${commentId}/`,
+          method: 'POST',
+          dataType: 'json',
+          data: {
+            csrfmiddlewaretoken: '{{ csrf_token }}',
+          },
+          success: function () {
+            // After deleting the comment, reload the journal details section to remove the deleted comment
+            loadJournalDetails(selectedJournalId);
+            // Close the comment modal
+            $('#commentModal').modal('hide');
+          },
+          error: function (error) {
+            console.error('Error deleting the comment:', error);
+          }
+        });
+      } else {
+        console.error('No journal item selected for deleting the comment.');
+      }
+    });
+
+    $('#commentModal').on('shown.bs.modal', function (e) {
+      $('.modal-backdrop').remove();
+    });
+
+    // Remove 'modal-open' class when modal is closed
+    $('#commentModal').on('hidden.bs.modal', function (e) {
+      $('body').removeClass('modal-open');
+    });
+  
+    $('.btn-edit').click(function () {
+      const selectedJournalId = $('.list-item.active').data('journal-id');
+
+      if (selectedJournalId) {
+        // Navigate to the edit page for the selected journal
+        window.location.href = `/edit_journal/${selectedJournalId}/`;
+      } else {
+        console.error('No journal item selected for editing.');
+      }
+    });
+
+    $('.btn-delete').click(function () {
+  const selectedJournalId = $('.list-item.active').data('journal-id');
+
+  if (selectedJournalId) {
+    // Show a confirmation dialog before proceeding with deletion
+    if (confirm("Are you sure you want to delete this journal?")) {
+      // AJAX call to delete the journal and its entries
+      $.ajax({
+        url: `/delete_journal/${selectedJournalId}/`,
+        method: 'POST',
+        dataType: 'json',
+        data: {
+          csrfmiddlewaretoken: '{{ csrf_token }}',
+        },
+        success: function (data) {
+          // After successful deletion, reload the journal list to remove the deleted journal from the list
+          window.location.reload();
+        },
+        error: function (error) {
+          console.error('Error deleting the journal:', error);
+        }
+      });
+    }
+  } else {
+    console.error('No journal item selected for deleting.');
+  }
+});
 
     $('.btn-overview').click(function () {
       const selectedJournalId = $('.list-item.active').data('journal-id');
@@ -299,6 +511,7 @@
                       <p><strong>Notes:</strong></p>
                       <p>${data.selected_journal.notes}</p>
                       <p><strong>Reference No:</strong> ${data.selected_journal.reference_no}</p>
+                      <p>Status: ${data.selected_journal.status}</p>
                     </div>
                   </div>
                 </div>
@@ -347,10 +560,10 @@
       </div>
       <br><br>
     `;
-
-            $('.details-section').hide();
-            $('.overview-section').html(overviewContent);
-            $('.overview-section').show();
+          $('.details-section').hide();
+          $('.details-section').empty(); // Clear the details-section content
+          $('.overview-section').html(overviewContent);
+          $('.overview-section').show();
           },
           error: function (error) {
             console.error('Error fetching journal details for overview:', error);
@@ -366,41 +579,13 @@
         if (selectedJournalId) {
           loadJournalDetails(selectedJournalId);
           $('.overview-section').hide();
+          $('.overview-section').empty(); // Clear the overview-section content
           $('.details-section').show();
         } else {
           console.error('No journal item selected for template.');
         }
       });
-      $('.btn-publish').click(function () {
-      var journalId = $('.list-item.active').data('journal-id');
-      console.log('Journal ID to publish:', journalId);
-
-      var publishUrl = "{% url 'publish_journal' %}";
-      var csrfToken = "{{ csrf_token }}";
-
-      $.ajax({
-        url: publishUrl,
-        method: 'POST',
-        headers: {
-          "X-CSRFToken": csrfToken
-        },
-        data: {
-          journal_id: journalId,
-        },
-        success: function (response) {
-          console.log('Publish successful! Response:', response);
-
-          // Update the UI to show the journal status as "Published"
-          $('.details-section .status').text('Published');
-          $('.list-item.active .status').text('Published');
-        },
-        error: function (error) {
-          console.error('Error publishing journal:', error);
-        }
-      });
-    });
-
-
+      
     });
   });
 </script>

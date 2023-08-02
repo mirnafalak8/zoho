@@ -127,17 +127,20 @@ urlpatterns = [
     path('get_journal_details/<int:journal_id>/', views.get_journal_details, name='get_journal_details'),
     path('get_journal_details_for_overview/<int:journal_id>/', views.get_journal_details_for_overview, name='get_journal_details_for_overview'),
     # path('journal_template/', views.journal_template, name='journal_template'),
-    path('publish_journal/', views.publish_journal, name='publish_journal'),
-    path('add_comment/<int:journal_id>/', views.add_comment, name='add_comment'),
-    path('get_comments/<int:journal_id>/', views.get_comments, name='get_comments'),
-    path('journal_comments/', views.journal_comments, name='journal_comments'),
+    path('update_journal_status/<int:journal_id>/', views.update_journal_status, name='update_journal_status'),
+    path('get_journal_comments/<int:journal_id>/', views.get_journal_comments, name='get_journal_comments'),
+    path('save_journal_comment/<int:journal_id>/', views.save_journal_comment, name='save_journal_comment'),
+    path('delete_journal_comment/<int:comment_id>/', views.delete_journal_comment, name='delete_journal_comment'),
+    # path('publish_journal/', views.publish_journal, name='publish_journal'),
     # path('add_comment/<int:journal_id>/', views.add_comment, name='add_comment'),
+    # path('get_comments/<int:journal_id>/', views.get_comments, name='get_comments'),
+    # path('journal_comments/', views.journal_comments, name='journal_comments'),
     path('edit_journal/<int:journal_id>/', views.edit_journal, name='edit_journal'),
-    path('edit_journal_view/', views.edit_journal_view, name='edit_journal_view'),
     # path('update_journal/<int:journal_id>/', views.update_journal, name='update_journal'),
-    path('journal_details/', views.journal_details, name='journal_details'),
-    path('journal/delete/<int:journal_id>/',views.delete_journal, name='delete_journal'),
+    # path('journal_details/', views.journal_details, name='journal_details'),
+    path('delete_journal/<int:journal_id>/', views.delete_journal, name='delete_journal'),
     path('save_pdf/', views.save_pdf, name='save_pdf'),
+
 
 
 
