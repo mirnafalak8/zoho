@@ -8,8 +8,11 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.3/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
+<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.3/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script> -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.0/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <style>
@@ -139,8 +142,8 @@
           <button class="btn btn-primary btn-comment" data-toggle="modal" data-target="#commentModal"><i class="fa fa-comments" aria-hidden="true"></i>
           <button class="btn btn-primary btn-edit"><i class="fa fa-edit" aria-hidden="true"></i></button>
           <button class="btn btn-primary btn-save-pdf"><i class="fa fa-file-pdf" aria-hidden="true"></i></button>
-          <button class="btn btn-primary"><i class="fa fa-print" aria-hidden="true"></i></button>
-          <button class="btn btn-primary"><i class="fa fa-paperclip" aria-hidden="true"></i></button>
+          <button class="btn btn-primary btn-print" id="btn-print-details"><i class="fa fa-print" aria-hidden="true"></i></button>
+          <button class="btn btn-primary btn-attachment"><i class="fa fa-paperclip" aria-hidden="true"></i></button>
           <button class="btn btn-danger btn-delete"><i class="fa fa-trash" aria-hidden="true"></i></button>
         </div>
         <div class="">
@@ -483,6 +486,89 @@
     console.error('No journal item selected for deleting.');
   }
 });
+
+document.querySelector('.btn-save-pdf').addEventListener('click', function () {
+    const element = document.getElementById('container'); 
+
+   
+    const pdfOptions = {
+      margin: 10,
+      filename: 'journal.pdf',
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2 },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+    };
+
+    html2pdf().from(element).set(pdfOptions).save();
+  });
+
+  function printDetailsContent() {
+    const containerElement = document.getElementById('container');
+    const pdfOptions = {
+      margin: 10,
+      filename: 'journal_details.pdf',
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2 },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+    };
+
+    // Use html2pdf to generate the PDF and print it
+    html2pdf()
+      .from(containerElement)
+      .set(pdfOptions)
+      .outputPdf()
+      .then((pdf) => {
+        // Open the PDF in a new tab for printing
+        const printWindow = window.open('', '_blank', 'width=800,height=600');
+        printWindow.document.open('text/html', 'replace');
+        printWindow.document.write('<html><head></head><body>');
+        printWindow.document.write('<embed width="100%" height="100%" name="plugin" src="' + pdf.output('datauristring') + '"/>');
+        printWindow.document.write('</body></html>');
+        printWindow.document.close();
+      });
+  }
+
+  // Event listener for the "Print" button
+  $('#btn-print-details').click(function () {
+    printDetailsContent();
+  });
+
+
+  // Event listener for the "Print" button
+  $('#btn-print-details').click(function () {
+    printDetailsContent();
+  });
+
+
+  $('.btn-attachment').click(function () {
+    const selectedJournalId = $('.list-item.active').data('journal-id');
+
+    if (selectedJournalId) {
+        $.ajax({
+            url: `/get_journal_attachment/${selectedJournalId}/`,
+            method: 'GET',
+            dataType: 'json',
+            success: function (data) {
+                if (data.attachment_url) {
+                    // Create a download link and trigger the click event to initiate download
+                    const link = document.createElement('a');
+                    link.href = data.attachment_url;
+                    link.download = 'attachment-file-name.ext'; // Replace with the actual file name
+                    link.click();
+                } else {
+                    // Show a tooltip or an alert indicating that there is no attachment
+                    alert('No attachment found.');
+                }
+            },
+            error: function (error) {
+                console.error('Error fetching journal attachment:', error);
+            }
+        });
+    } else {
+        console.error('No journal item selected for downloading attachment.');
+    }
+});
+
 
     $('.btn-overview').click(function () {
       const selectedJournalId = $('.list-item.active').data('journal-id');

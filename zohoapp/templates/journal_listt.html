@@ -632,7 +632,12 @@
 
     document.body.innerHTML = originalContents;
   }
+  document.querySelector('.btn-print').addEventListener('click', function () {
+    const element = document.getElementById('container'); 
 
+    // Open the print dialog
+    window.print();
+  });
 </script>
 
 {% endblock %}

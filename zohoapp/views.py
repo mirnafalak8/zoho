@@ -3213,6 +3213,19 @@ def delete_journal_comment(request, comment_id):
     
     return JsonResponse({'error': 'Invalid request.'}, status=400)
 
+def get_journal_attachment(request, journal_id):
+    try:
+        selected_journal = Journal.objects.get(id=journal_id)
+
+        # Assuming the attachment field is named 'attachment'
+        if selected_journal.attachment:
+            attachment_url = selected_journal.attachment.url
+            return JsonResponse({'attachment_url': attachment_url})
+        else:
+            return JsonResponse({'attachment_url': None})
+    except Journal.DoesNotExist:
+        return JsonResponse({'error': 'Journal not found'}, status=404)
+
 # def journal_details(request):
 #     selected_journal_id = request.GET.get('journal_id')
 #     selected_journal = None
