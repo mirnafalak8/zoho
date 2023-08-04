@@ -15,6 +15,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/print-this/printThis.js"></script>
+
 <style>
   .custom-height {
     height: 40px;
@@ -142,7 +144,7 @@
           <button class="btn btn-primary btn-comment" data-toggle="modal" data-target="#commentModal"><i class="fa fa-comments" aria-hidden="true"></i>
           <button class="btn btn-primary btn-edit"><i class="fa fa-edit" aria-hidden="true"></i></button>
           <button class="btn btn-primary btn-save-pdf"><i class="fa fa-file-pdf" aria-hidden="true"></i></button>
-          <button class="btn btn-primary btn-print" id="btn-print-details"><i class="fa fa-print" aria-hidden="true"></i></button>
+          <button class="btn btn-primary btn-print"><i class="fa fa-print" aria-hidden="true"></i></button>
           <button class="btn btn-primary btn-attachment"><i class="fa fa-paperclip" aria-hidden="true"></i></button>
           <button class="btn btn-danger btn-delete"><i class="fa fa-trash" aria-hidden="true"></i></button>
         </div>
@@ -323,7 +325,6 @@
       });
     }
 
-    // Add click event listener for the "Publish" button
     $('.btn-publish').click(function () {
       const selectedJournalId = $('.list-item.active').data('journal-id');
       if (selectedJournalId) {
@@ -502,43 +503,35 @@ document.querySelector('.btn-save-pdf').addEventListener('click', function () {
     html2pdf().from(element).set(pdfOptions).save();
   });
 
-  function printDetailsContent() {
-    const containerElement = document.getElementById('container');
-    const pdfOptions = {
-      margin: 10,
-      filename: 'journal_details.pdf',
-      image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2 },
-      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-    };
+  $('.btn-print').click(function () {
+    // Function to print the content
+    function printContent(content) {
+      // const printWindow = window.open('', '', 'width=800,height=600');
+      // printWindow.document.write('<html><style></style><head><title>Print</title></head><body>');
+      // printWindow.document.write(content);
+      // printWindow.document.write('</body></html>');
+      // printWindow.document.close();
+      printWindow.onload = function () {
+        printWindow.print();
+        printWindow.close();
+      };
+    }
 
-    // Use html2pdf to generate the PDF and print it
-    html2pdf()
-      .from(containerElement)
-      .set(pdfOptions)
-      .outputPdf()
-      .then((pdf) => {
-        // Open the PDF in a new tab for printing
-        const printWindow = window.open('', '_blank', 'width=800,height=600');
-        printWindow.document.open('text/html', 'replace');
-        printWindow.document.write('<html><head></head><body>');
-        printWindow.document.write('<embed width="100%" height="100%" name="plugin" src="' + pdf.output('datauristring') + '"/>');
-        printWindow.document.write('</body></html>');
-        printWindow.document.close();
-      });
-  }
+    $('#btn-print-details').click(function () {
+            // Hide the elements you don't want to print (e.g., other buttons, unnecessary elements)
+            $('.btn').hide();
+            $('.overview-section').hide();
 
-  // Event listener for the "Print" button
-  $('#btn-print-details').click(function () {
-    printDetailsContent();
+            // Call the print function
+            window.print();
+
+            // Restore the hidden elements after printing is done
+            $('.btn').show();
+            $('.overview-section').show();
+        });
+    const detailsSectionContent = $('.details-section').html();
+    printContent(detailsSectionContent);
   });
-
-
-  // Event listener for the "Print" button
-  $('#btn-print-details').click(function () {
-    printDetailsContent();
-  });
-
 
   $('.btn-attachment').click(function () {
     const selectedJournalId = $('.list-item.active').data('journal-id');
