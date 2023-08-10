@@ -1160,56 +1160,55 @@ tr:hover{
 
     let currentAccountId = null;
 
-function openModal(accountId) {
-    currentAccountId = accountId; // Set the current account ID
-    $('#accountForm')[0].reset();
-    $('#myModal').modal('show');
-}
+    function openModal(accountId) {
+            $('#accountForm').attr('data-account', accountId); // Set the data-account attribute
+            $('#accountForm')[0].reset();
+            $('#myModal').modal('show');
+        }
 
+        function submitForm() {
+            var accountId = $('#accountForm').attr('data-account');
+            var form = document.querySelector(`form[data-account="${accountId}"]`);
+            var formData = new FormData(form);
 
-function submitForm() {
-            if (currentAccountId !== null) {
-                var form = document.querySelector(`form[data-account="${currentAccountId}"]`);
-                var formData = new FormData(form);
+            fetch(form.action, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success === true) {
+                    var accountSelect = document.querySelector(`select[name="${accountId}"]`);
 
-                fetch(form.action, {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success === true) {
-                        var accountSelect = document.querySelector(`select[name="${currentAccountId}"]`);
-                        
-                        // Clear existing options
-                        accountSelect.innerHTML = '';
+                    // Clear existing options
+                    accountSelect.innerHTML = '';
 
-                        // Add new options based on the returned account names
-                        data.account_names.forEach(accountName => {
-                            var option = document.createElement('option');
-                            option.value = accountName;
-                            option.text = accountName;
-                            accountSelect.add(option);
-                        });
+                    // Add new options based on the returned account names
+                    data.account_names.forEach(accountName => {
+                        var option = document.createElement('option');
+                        option.value = accountName;
+                        option.text = accountName;
+                        accountSelect.add(option);
+                    });
 
-                        // Set the selected value to the newly created account name
-                        accountSelect.value = data.account_name;
+                    // Set the selected value to the newly created account name
+                    accountSelect.value = data.account_name;
 
-                        $('#myModal').modal('hide');
-                    } else {
-                        console.log(data.error);
-                    }
-                })
-                .catch(error => {
-                    console.error(error);
-                });
-            }
+                    $('#myModal').modal('hide');
+                } else {
+                    console.log(data.error);
+                }
+            })
+            .catch(error => {
+                console.error(error);
+            });
         }
 
         $('#accountForm').submit(function (e) {
             e.preventDefault();
             submitForm();
         });
+
 
 
 });
