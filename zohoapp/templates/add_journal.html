@@ -375,7 +375,7 @@ tr:hover{
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div> -->
             <div class="modal-body">
-                <form action="{% url 'create_account_journal'%}" id="accountForm" method="POST" enctype="multipart/form-data">
+                <form action="{% url 'create_account_journal'%}" id="accountForm" data-account="" method="POST" enctype="multipart/form-data">
                     {% csrf_token%}
                     <div class="modal" id="create_account">
                       <div class="modal-dialog modal-xl modal-dialog-centered " role="document">
@@ -1168,39 +1168,42 @@ tr:hover{
 
         function submitForm() {
             var accountId = $('#accountForm').attr('data-account');
-            var form = document.querySelector(`form[data-account="${accountId}"]`);
-            var formData = new FormData(form);
+            var form = $('#accountForm'); // Use the form directly
+            var formData = new FormData(form[0]); // Access the raw DOM element using [0]
 
-            fetch(form.action, {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success === true) {
-                    var accountSelect = document.querySelector(`select[name="${accountId}"]`);
+            $.ajax({
+                type: 'POST',
+                url: form.attr('action'),
+                data: formData,
+                processData: false, // Important for FormData
+                contentType: false, // Important for FormData
+                success: function (response) {
+                    if (response.success === true) {
+                        var accountSelect = $(`select[data-account="${accountId}"]`);
 
-                    // Clear existing options
-                    accountSelect.innerHTML = '';
+                        // Clear existing options
+                        accountSelect.empty();
 
-                    // Add new options based on the returned account names
-                    data.account_names.forEach(accountName => {
-                        var option = document.createElement('option');
-                        option.value = accountName;
-                        option.text = accountName;
-                        accountSelect.add(option);
-                    });
+                        // Add new options based on the returned account names
+                        response.account_names.forEach(accountName => {
+                            var option = $('<option>', {
+                                value: accountName,
+                                text: accountName
+                            });
+                            accountSelect.append(option);
+                        });
 
-                    // Set the selected value to the newly created account name
-                    accountSelect.value = data.account_name;
+                        // Set the selected value to the newly created account name
+                        accountSelect.val(response.account_name);
 
-                    $('#myModal').modal('hide');
-                } else {
-                    console.log(data.error);
+                        $('#myModal').modal('hide');
+                    } else {
+                        console.log(response.message);
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error(error);
                 }
-            })
-            .catch(error => {
-                console.error(error);
             });
         }
 
@@ -1208,7 +1211,6 @@ tr:hover{
             e.preventDefault();
             submitForm();
         });
-
 
 
 });
