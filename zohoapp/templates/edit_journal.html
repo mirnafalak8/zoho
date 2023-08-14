@@ -1102,36 +1102,92 @@ tr:hover{
         }
     }
     function openModal() {
+        $('#accountForm')[0].reset();
         $('#myModal').modal('show');
     }
+    
     $('#accountForm').submit(function (e) {
-    e.preventDefault(); 
-
+    e.preventDefault();
     var form = $(this);
     var url = form.attr('action');
     var formData = form.serialize();
 
     $.ajax({
-        type: 'POST',
-        url: url,
-        data: formData,
-        success: function (response) {
-    if (response.success === true) {
-        var accountSelect = document.querySelector('select[name="account"]');
-        var option = document.createElement('option');
-        option.value = response.accountName;
-        option.text = response.accountName;
-        accountSelect.add(option);
-
-        $('#myModal').modal('hide');
-    } else {
-        console.log(response.message);
-    }
-},
-        error: function (xhr, status, error) {
-            console.error(error);
+      type: 'POST',
+      url: url,
+      data: formData,
+      success: function (response) {
+        if (response.success === true) {
+          var accountSelect = $('select[name="account"]');
+          var option = $('<option>', {
+            value: response.account_name,
+            text: response.account_name
+          });
+          accountSelect.append(option).val(response.account_name);
+          $('#myModal').modal('hide');
+        } else {
+          console.log(response.message);
         }
+      },
+      error: function (xhr, status, error) {
+        console.error(error);
+      }
     });
+
+    let currentAccountId = null;
+
+    function openModal(accountId) {
+            $('#accountForm').attr('data-account', accountId); // Set the data-account attribute
+            $('#accountForm')[0].reset();
+            $('#myModal').modal('show');
+        }
+
+        function submitForm() {
+            var accountId = $('#accountForm').attr('data-account');
+            var form = $('#accountForm'); // Use the form directly
+            var formData = new FormData(form[0]); // Access the raw DOM element using [0]
+
+            $.ajax({
+                type: 'POST',
+                url: form.attr('action'),
+                data: formData,
+                processData: false, // Important for FormData
+                contentType: false, // Important for FormData
+                success: function (response) {
+                    if (response.success === true) {
+                        var accountSelect = $(`select[data-account="${accountId}"]`);
+
+                        // Clear existing options
+                        accountSelect.empty();
+
+                        // Add new options based on the returned account names
+                        response.account_names.forEach(accountName => {
+                            var option = $('<option>', {
+                                value: accountName,
+                                text: accountName
+                            });
+                            accountSelect.append(option);
+                        });
+
+                        // Set the selected value to the newly created account name
+                        accountSelect.val(response.account_name);
+
+                        $('#myModal').modal('hide');
+                    } else {
+                        console.log(response.message);
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error(error);
+                }
+            });
+        }
+
+        $('#accountForm').submit(function (e) {
+            e.preventDefault();
+            submitForm();
+        });
+
 });
 </script>
 

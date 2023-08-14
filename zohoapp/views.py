@@ -2922,8 +2922,11 @@ def account_edit_journal(request):
         # journal_id = a.id
 
         # return HttpResponseRedirect(reverse('edit_journal', kwargs={'journal_id': journal_id}))
-        return redirect('edit_journal')
-    return redirect('edit_journal')
+    #     return redirect('account_edit_journal')
+    # return redirect('edit_journal')
+        return JsonResponse({'success': True, 'account_name': a.account_name})
+
+    return JsonResponse({'error': 'Invalid request method'}, status=405)
 
 def manual_journal_home(request):
     query = request.GET.get('query')
